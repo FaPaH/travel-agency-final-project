@@ -1,95 +1,84 @@
 package com.epam.finaltask.model;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-@Table
-public class User {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "users")
+public class User implements UserDetails {
 
-	@Id
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", columnDefinition = "VARCHAR(36)")
     private UUID id;
 
+    @Column(name = "username")
     private String username;
 
+    @Column(name = "password")
     private String password;
 
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", columnDefinition = "user_role")
     private Role role;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @Column(name = "vouchers")
     private List<Voucher> vouchers;
 
+    @Column(name = "phone_number")
     private String phoneNumber;
 
+    @ColumnDefault("0.00")
+    @Column(name = "balance", precision = 10, scale = 2)
     private BigDecimal balance;
 
+    @ColumnDefault("false")
+    @Column(name = "user_status")
     private boolean active;
 
-	public UUID getId() {
-		return id;
-	}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return role.getAuthorities();
+    }
 
-	public void setId(UUID id) {
-		this.id = id;
-	}
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    @Override
+    public boolean isAccountNonLocked() {
+        return active;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public Role getRole() {
-		return role;
-	}
-
-	public void setRole(Role role) {
-		this.role = role;
-	}
-
-	public List<Voucher> getVouchers() {
-		return vouchers;
-	}
-
-	public void setVouchers(List<Voucher> vouchers) {
-		this.vouchers = vouchers;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
-
-	public BigDecimal getBalance() {
-		return balance;
-	}
-
-	public void setBalance(BigDecimal balance) {
-		this.balance = balance;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-    
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
 }
