@@ -1,5 +1,6 @@
 package com.epam.finaltask.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -18,12 +19,7 @@ import org.hibernate.type.SqlTypes;
 @NoArgsConstructor
 @Builder
 @Table(name = "vouchers")
-public class Voucher {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", columnDefinition = "VARCHAR(36)")
-    private UUID id;
+public class Voucher extends BaseEntity{
 
     @Column(name = "title")
     private String title;
@@ -31,8 +27,8 @@ public class Voucher {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "phoneNumber", precision = 10)
-    private Double price;
+    @Column(name = "price", precision = 10, scale = 2)
+    private BigDecimal price;
 
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
@@ -61,7 +57,7 @@ public class Voucher {
     private LocalDate evictionDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ColumnDefault("false")

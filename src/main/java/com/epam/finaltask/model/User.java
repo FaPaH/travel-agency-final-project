@@ -3,16 +3,14 @@ package com.epam.finaltask.model;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,13 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @Builder
 @Table(name = "users")
-public class User implements UserDetails {
-
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", columnDefinition = "VARCHAR(36)")
-    private UUID id;
+public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "username")
     private String username;
@@ -39,7 +31,7 @@ public class User implements UserDetails {
 
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", columnDefinition = "user_role")
+    @Column(name = "user_role", columnDefinition = "user_role_type")
     private Role role;
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
