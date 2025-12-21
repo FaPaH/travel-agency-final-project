@@ -10,6 +10,8 @@ import java.util.List;
 @Service
 public class VoucherServiceImpl implements VoucherService {
 
+    //TODO: Implement cashing for hot vouchers and most accessed vouchers
+
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
         return null;

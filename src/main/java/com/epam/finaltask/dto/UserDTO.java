@@ -4,23 +4,25 @@ import java.util.List;
 
 import com.epam.finaltask.model.Voucher;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Setter
-@Getter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
 
 	private String id;
 
 	private String username;
 
-	private String password;
+	//private String password;
 
 	private String role;
 
 	private List<Voucher> vouchers;
+
+	private String email;
 
 	private String phoneNumber;
 

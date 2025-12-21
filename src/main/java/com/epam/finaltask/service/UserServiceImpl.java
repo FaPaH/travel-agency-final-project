@@ -5,6 +5,9 @@ import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public UserDTO register(UserDTO userDTO) {
@@ -25,6 +29,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		User user = userMapper.toUser(userDTO);
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 
 		return userMapper.toUserDTO(userRepository.save(user));
 	}
@@ -64,5 +69,22 @@ public class UserServiceImpl implements UserService {
 		return userMapper.toUserDTO(userRepository.findById(id).orElseThrow(
 				() -> new RuntimeException("User not found")
 		));
+	}
+
+	@Override
+	public UserDetailsService userDetailsService() {
+		return this::getByUsername;
+	}
+
+	@Override
+	public User getCurrentUser() {
+		var username = SecurityContextHolder.getContext().getAuthentication().getName();
+		return userMapper.toUser(getUserByUsername(username));
+	}
+
+	private User getByUsername(String username) {
+		return userRepository.findUserByUsername(username).orElseThrow(
+				() -> new RuntimeException("User not found")
+		);
 	}
 }

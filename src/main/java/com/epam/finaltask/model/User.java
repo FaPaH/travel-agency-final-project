@@ -49,6 +49,9 @@ public class User implements UserDetails {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Column(name = "email")
+    private String email;
+
     @ColumnDefault("0.00")
     @Column(name = "balance", precision = 10, scale = 2)
     private BigDecimal balance;
