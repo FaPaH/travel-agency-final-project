@@ -5,6 +5,9 @@ import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,50 +20,71 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public UserDTO register(UserDTO userDTO) {
 		if (userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new RuntimeException("User with this username already exists");
+			throw new RuntimeException("Username is already registered");
 		}
+
 		User user = userMapper.toUser(userDTO);
-		User savedUser = userRepository.save(user);
-		return userMapper.toUserDTO(savedUser);
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+		return userMapper.toUserDTO(userRepository.save(user));
 	}
 
 	@Override
 	public UserDTO updateUser(String username, UserDTO userDTO) {
-		User user = userRepository.findUserByUsername(username)
-				.orElseThrow(() -> new RuntimeException("User not found"));
+		if (!userRepository.existsByUsername(userDTO.getUsername())) {
+			throw new RuntimeException("User not found");
+		}
 
-		user.setPhoneNumber(userDTO.getPhoneNumber());
+		User user = userMapper.toUser(userDTO);
 
-		User savedUser = userRepository.save(user);
-		return userMapper.toUserDTO(savedUser);
+		return userMapper.toUserDTO(userRepository.save(user));
 	}
 
 	@Override
 	public UserDTO getUserByUsername(String username) {
-		User user = userRepository.findUserByUsername(username)
-				.orElseThrow(() -> new RuntimeException("User not found"));
-		return userMapper.toUserDTO(user);
+		return userMapper.toUserDTO(userRepository.findUserByUsername(username).orElseThrow(
+				() -> new RuntimeException("User not found")
+		));
 	}
 
 	@Override
 	public UserDTO changeAccountStatus(UserDTO userDTO) {
-
-		userRepository.findById(UUID.fromString(userDTO.getId()))
-				.orElseThrow(() -> new RuntimeException("User not found"));
+		if (!userRepository.existsByUsername(userDTO.getUsername())) {
+			throw new RuntimeException("User not found");
+		}
 
 		User user = userMapper.toUser(userDTO);
-		User savedUser = userRepository.save(user);
-		return userMapper.toUserDTO(savedUser);
+		user.setActive(!user.isActive());
+
+		return userMapper.toUserDTO(userRepository.save(user));
 	}
 
 	@Override
 	public UserDTO getUserById(UUID id) {
-		User user = userRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("User not found"));
-		return userMapper.toUserDTO(user);
+		return userMapper.toUserDTO(userRepository.findById(id).orElseThrow(
+				() -> new RuntimeException("User not found")
+		));
+	}
+
+	@Override
+	public UserDetailsService userDetailsService() {
+		return this::getByUsername;
+	}
+
+	@Override
+	public User getCurrentUser() {
+		var username = SecurityContextHolder.getContext().getAuthentication().getName();
+		return userMapper.toUser(getUserByUsername(username));
+	}
+
+	private User getByUsername(String username) {
+		return userRepository.findUserByUsername(username).orElseThrow(
+				() -> new RuntimeException("User not found")
+		);
 	}
 }
