@@ -27,11 +27,7 @@ public enum Role {
                     ADMIN_UPDATE,
                     ADMIN_DELETE,
                     ADMIN_CREATE,
-                    MANAGER_UPDATE,
-                    USER_READ,
-                    USER_CREATE,
-                    USER_DELETE,
-                    USER_UPDATE
+                    MANAGER_UPDATE
             )
     ),
     MANAGER(
