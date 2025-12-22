@@ -2,6 +2,8 @@ package com.epam.finaltask.restcontroller;
 
 import com.epam.finaltask.dto.*;
 import com.epam.finaltask.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +31,11 @@ public class AuthenticationRestController {
         return ResponseEntity.ok().body(authenticationService.refresh(refreshTokenRequest));
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody LogoutRequest logoutRequest) {
+    @GetMapping("/sign-out")
+    public ResponseEntity<Void> logout(@RequestBody LogoutRequest logoutRequest,
+                                       HttpServletRequest request,
+                                       HttpServletResponse response) {
+        authenticationService.logout(logoutRequest, request, response);
         return ResponseEntity.ok().build();
     }
 }
