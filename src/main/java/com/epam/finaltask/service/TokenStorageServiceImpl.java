@@ -16,19 +16,19 @@ public class TokenStorageServiceImpl implements TokenStorageService {
 
     @Override
     @CachePut(value = REFRESH_TOKENS, key = "#userId")
-    public String storeRefreshToken(UUID userId, String refreshToken) {
+    public String storeRefreshToken(String userId, String refreshToken) {
         return refreshToken;
     }
 
     @Override
     @Cacheable(value = REFRESH_TOKENS, key = "#userId", unless = "#result == null")
-    public String getRefreshToken(UUID userId) {
+    public String getRefreshToken(String userId) {
         return null;
     }
 
     @Override
     @CacheEvict(value = REFRESH_TOKENS, key = "#userId")
-    public void revokeRefreshToken(UUID userId) {
+    public void revokeRefreshToken(String userId) {
 
     }
 }

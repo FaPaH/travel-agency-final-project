@@ -1,6 +1,8 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthenticationService {
 

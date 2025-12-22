@@ -4,9 +4,9 @@ import java.util.UUID;
 
 public interface TokenStorageService {
 
-    String storeRefreshToken(UUID id, String refreshToken);
+    String storeRefreshToken(String id, String refreshToken);
 
-    String getRefreshToken(UUID id);
+    String getRefreshToken(String id);
 
-    void revokeRefreshToken(UUID id);
+    void revokeRefreshToken(String id);
 }

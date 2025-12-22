@@ -20,7 +20,6 @@ public class AuthenticationRestController {
 
     @PostMapping("/sign-in")
     public ResponseEntity<AuthResponse> signIn(@RequestBody LoginRequest loginRequest) {
-        System.out.println(loginRequest);
         return ResponseEntity.ok().body(authenticationService.login(loginRequest));
     }
 
@@ -29,8 +28,9 @@ public class AuthenticationRestController {
         return ResponseEntity.ok().body(authenticationService.refresh(refreshTokenRequest));
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/sign-out")
     public ResponseEntity<Void> logout(@RequestBody LogoutRequest logoutRequest) {
+        authenticationService.logout(logoutRequest);
         return ResponseEntity.ok().build();
     }
 }

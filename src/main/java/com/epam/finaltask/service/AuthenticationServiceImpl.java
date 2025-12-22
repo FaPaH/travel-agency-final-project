@@ -8,20 +8,19 @@ import com.epam.finaltask.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    //TODO: Implement cashing for refresh token
+    //TODO: OAuth implementation, rest User controller/service, rest Voucher controller/service
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
+    private final TokenStorageService tokenStorageService;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -31,19 +30,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 loginRequest.getPassword()
         ));
 
-        var user = userService
+        User user = (User) userService
                 .userDetailsService()
                 .loadUserByUsername(loginRequest.getUsername());
 
         String jwtToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
+        if (tokenStorageService.getRefreshToken(user.getId().toString()) == null) {
+            tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
+        } else {
+            //delete old token
+            tokenStorageService.revokeRefreshToken(user.getId().toString());
+            //add new token
+            tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
+        }
+
         return new AuthResponse(jwtToken, refreshToken);
     }
 
     @Override
     public AuthResponse register(RegisterRequest registerRequest) {
-
         User user = User.builder()
                 .username(registerRequest.getUsername())
                 .password(registerRequest.getPassword())
@@ -52,10 +59,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .role(Role.USER)
                 .build();
 
-        userService.register(userMapper.toUserDTO(user));
+        UserDTO newUser = userService.register(userMapper.toUserDTO(user));
 
         String jwtToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
+
+        tokenStorageService.storeRefreshToken(newUser.getId(), refreshToken);
 
         return new AuthResponse(jwtToken, refreshToken);
     }
@@ -64,20 +73,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponse refresh(RefreshTokenRequest refreshRequest) {
 
         User user = userMapper.toUser(userService.getUserByUsername(jwtUtil.extractUsername(refreshRequest.getRefreshToken())));
-
-        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
-            throw new RuntimeException("Refresh token expired");
+        System.out.println("before ex");
+        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())
+                || tokenStorageService.getRefreshToken(user.getId().toString()) == null) {
+            System.out.println("exception");
+            throw new RuntimeException("Please log in again");
         }
 
         String jwtToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
+
+        tokenStorageService.revokeRefreshToken(user.getId().toString());
+        tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
 
         return new AuthResponse(jwtToken, refreshToken);
     }
 
     @Override
     public void logout(LogoutRequest logoutRequest) {
-        //TODO: Cache delete
-        SecurityContextHolder.clearContext();
+
+        String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id",String.class);
+
+        if (id != null) {
+            tokenStorageService.revokeRefreshToken(id);
+        }
     }
 }
