@@ -46,9 +46,10 @@ public class User extends BaseEntity implements UserDetails {
 
     @ColumnDefault("0.00")
     @Column(name = "balance", precision = 10, scale = 2)
-    private BigDecimal balance;
+    @Builder.Default
+    private BigDecimal balance = BigDecimal.ZERO;
 
-    @ColumnDefault("false")
+    @ColumnDefault("true")
     @Column(name = "user_status")
     private boolean active;
 
@@ -59,21 +60,21 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return active;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return active;
     }
 }

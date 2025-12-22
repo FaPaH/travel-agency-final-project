@@ -20,7 +20,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
 
@@ -47,7 +46,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = User.builder()
                 .username(registerRequest.getUsername())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .password(registerRequest.getPassword())
                 .email(registerRequest.getEmail())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .role(Role.USER)
@@ -65,6 +64,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponse refresh(RefreshTokenRequest refreshRequest) {
 
         User user = userMapper.toUser(userService.getUserByUsername(jwtUtil.extractUsername(refreshRequest.getRefreshToken())));
+
+        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
+            throw new RuntimeException("Refresh token expired");
+        }
 
         String jwtToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);

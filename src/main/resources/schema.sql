@@ -65,9 +65,9 @@ CREATE TABLE IF NOT EXISTS users (
     phone_number VARCHAR(30),
     email VARCHAR(255) NOT NULL,
 
-    balance NUMERIC(10, 2) DEFAULT 0.00 CHECK (balance >= 0),
+    balance NUMERIC(10, 2) DEFAULT 0.00 CHECK (balance >= 0) NOT NULL,
 
-    user_status BOOLEAN DEFAULT FALSE,
+    user_status BOOLEAN DEFAULT TRUE,
 
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
