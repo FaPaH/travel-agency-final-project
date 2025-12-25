@@ -53,6 +53,11 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "user_status")
     private boolean active;
 
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", columnDefinition = "auth_provider_type")
+    private AuthProvider authProvider;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return role.getAuthorities();

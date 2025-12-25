@@ -82,6 +82,13 @@ public class UserServiceImpl implements UserService {
 		return userMapper.toUser(getUserByUsername(username));
 	}
 
+	@Override
+	public UserDTO getUserByEmail(String email) {
+		return userMapper.toUserDTO(userRepository.findUserByEmail(email).orElseThrow(
+				() -> new RuntimeException("User not found")
+		));
+	}
+
 	private User getByUsername(String username) {
 		return userRepository.findUserByUsername(username).orElseThrow(
 				() -> new RuntimeException("User not found")

@@ -6,8 +6,6 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 import static com.epam.finaltask.model.CacheType.CacheNames.REFRESH_TOKENS;
 
 @Service

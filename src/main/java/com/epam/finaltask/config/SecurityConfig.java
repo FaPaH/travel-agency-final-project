@@ -1,7 +1,13 @@
 package com.epam.finaltask.config;
 
 import com.epam.finaltask.filer.JwtAuthenticationFilter;
-import com.epam.finaltask.service.UserService;
+import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.model.User;
+import com.epam.finaltask.service.*;
+import com.epam.finaltask.util.JwtUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,14 +20,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.List;
 
 @Configuration
@@ -33,6 +41,10 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final CustomOAuth2UserService oAuth2UserService;
+    private final JwtUtil jwtUtil;
+    private final UserMapper userMapper;
+    private final TokenStorageService tokenStorageService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,9 +64,48 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService)
+                        )
+                        .successHandler(oAuth2AuthenticationSuccessHandler())
+                );
 
         return http.build();
+    }
+
+    @Bean
+    AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+        return new AuthenticationSuccessHandler() {
+            @Override
+            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+
+                String email = oAuth2User.getAttribute("email");
+                String username = oAuth2User.getAttribute("login");
+                User user;
+
+                if (email != null) {
+                    user = userMapper.toUser(userService.getUserByEmail(email));
+                } else {
+                    user = userMapper.toUser(userService.getUserByUsername(username));
+                }
+
+                String accessToken = jwtUtil.generateToken(user);
+                String refreshToken = jwtUtil.generateRefreshToken(user);
+
+                tokenStorageService.revokeRefreshToken(user.getId().toString());
+                tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
+
+                String targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
+                        .queryParam("accessToken", accessToken)
+                        .queryParam("refreshToken", refreshToken)
+                        .build().toUriString();
+
+                response.sendRedirect(targetUrl);
+            }
+        };
     }
 
     @Bean

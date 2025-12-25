@@ -6,11 +6,19 @@ DROP TYPE IF EXISTS hotel_type CASCADE;
 DROP TYPE IF EXISTS tour_type CASCADE;
 DROP TYPE IF EXISTS transfer_type CASCADE;
 DROP TYPE IF EXISTS status_type CASCADE;
+DROP TYPE IF EXISTS auth_provider_type CASCADE;
 
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS vouchers CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+CREATE TYPE auth_provider_type AS ENUM (
+    'LOCAL',
+    'GOOGLE',
+    'GITHUB',
+    'FACEBOOK'
+    );
 
 CREATE TYPE user_role_type AS ENUM (
     'ADMIN',
@@ -63,11 +71,13 @@ CREATE TABLE IF NOT EXISTS users (
     user_role user_role_type NOT NULL,
 
     phone_number VARCHAR(30),
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
 
     balance NUMERIC(10, 2) DEFAULT 0.00 CHECK (balance >= 0) NOT NULL,
 
     user_status BOOLEAN DEFAULT TRUE,
+
+    auth_provider auth_provider_type NOT NULL,
 
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

@@ -2,19 +2,19 @@ BEGIN;
 
 TRUNCATE TABLE vouchers, users RESTART IDENTITY CASCADE;
 
-INSERT INTO users (id, username, password, user_role, phone_number, email, balance, user_status)
+INSERT INTO users (id, username, password, user_role, phone_number, email, balance, user_status, auth_provider)
 VALUES
 -- admin123
-('11111111-1111-1111-1111-111111111111', 'admin_boss', '$2a$12$3e/PrWuIRyLjnGFKRfxfYOo9Kqf8uSSmPAo3vfLdsO6gexNpKDU6.', 'ADMIN', '+1234567890', 'admin@travel.com', 0.00, TRUE),
+('11111111-1111-1111-1111-111111111111', 'admin_boss', '$2a$12$3e/PrWuIRyLjnGFKRfxfYOo9Kqf8uSSmPAo3vfLdsO6gexNpKDU6.', 'ADMIN', '+1234567890', 'admin@travel.com', 0.00, TRUE, 'LOCAL'),
 
 -- manager123
-('22222222-2222-2222-2222-222222222222', 'manager_lisa', '$2a$12$I2B/SnRFYLi2d5ElTrIfdedCZ8ybSrouvAz/GjKFOmOmcfNTrZIKS', 'MANAGER', '+1987654321', 'lisa@travel.com', 0.00, TRUE),
+('22222222-2222-2222-2222-222222222222', 'manager_lisa', '$2a$12$I2B/SnRFYLi2d5ElTrIfdedCZ8ybSrouvAz/GjKFOmOmcfNTrZIKS', 'MANAGER', '+1987654321', 'lisa@travel.com', 0.00, TRUE, 'LOCAL'),
 
 -- bob123
-('33333333-3333-3333-3333-333333333333', 'traveler_bob', '$2a$12$5ITpyTr6k2GnQPGPueEhTeekbsctqYRwdeRo/eXB6IQKRz25SzumK', 'USER', '+1122334455', 'bob@gmail.com', 5000.00, TRUE),
+('33333333-3333-3333-3333-333333333333', 'traveler_bob', '$2a$12$5ITpyTr6k2GnQPGPueEhTeekbsctqYRwdeRo/eXB6IQKRz25SzumK', 'USER', '+1122334455', 'bob@gmail.com', 5000.00, TRUE, 'LOCAL'),
 
 --  student123
-('44444444-4444-4444-4444-444444444444', 'poor_student', '$2a$12$ZV6JcqThPUCXALlU.lNBe.lK/RTzjT5EaxrWrIRkSeFA5mMK0sDF.', 'USER', NULL, 'student@uni.edu', 10.00, FALSE);
+('44444444-4444-4444-4444-444444444444', 'poor_student', '$2a$12$ZV6JcqThPUCXALlU.lNBe.lK/RTzjT5EaxrWrIRkSeFA5mMK0sDF.', 'USER', NULL, 'student@uni.edu', 10.00, FALSE, 'LOCAL');
 
 
 INSERT INTO vouchers (

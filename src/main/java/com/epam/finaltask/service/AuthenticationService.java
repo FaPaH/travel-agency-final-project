@@ -1,8 +1,7 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.epam.finaltask.model.User;
 
 public interface AuthenticationService {
 
@@ -13,4 +12,6 @@ public interface AuthenticationService {
     AuthResponse refresh(RefreshTokenRequest refreshRequest);
 
     void logout(LogoutRequest logoutRequest);
+
+    AuthResponse generateTokensAndStore(User user);
 }
