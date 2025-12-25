@@ -14,4 +14,6 @@ public interface AuthenticationService {
     void logout(LogoutRequest logoutRequest);
 
     AuthResponse generateTokensAndStore(User user);
+
+    
 }

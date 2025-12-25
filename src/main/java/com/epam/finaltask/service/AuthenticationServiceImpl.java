@@ -7,6 +7,7 @@ import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    //TODO: OAuth implementation (facebook),
-    // password reset (next),
+    //TODO: OAuth implementation (check),
+    // password reset (current),
     // rest User controller/service,
     // rest Voucher controller/service,
     // exception handling for rest,
@@ -26,7 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
-    private final TokenStorageService tokenStorageService;
+    private final TokenStorageService<String> refreshTokenStorageService;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -54,9 +55,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .authProvider(AuthProvider.LOCAL)
                 .build();
 
-        userService.register(userMapper.toUserDTO(user));
+        User newUser = userMapper.toUser(userService.register(userMapper.toUserDTO(user)));
 
-        return generateTokensAndStore(user);
+        return generateTokensAndStore(newUser);
     }
 
     @Override
@@ -65,7 +66,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userMapper.toUser(userService.getUserByUsername(jwtUtil.extractUsername(refreshRequest.getRefreshToken())));
 
         if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())
-                || tokenStorageService.getRefreshToken(user.getId().toString()) == null) {
+                || refreshTokenStorageService.get(user.getId().toString()) == null) {
             throw new RuntimeException("Please log in again");
         }
 
@@ -78,8 +79,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id",String.class);
 
         if (id != null) {
-            tokenStorageService.revokeRefreshToken(id);
+            refreshTokenStorageService.revoke(id);
         }
+    }
+
+    @Override
+    public AuthResponse generateTokensAndStore(User user) {
+        AuthResponse authResponse = generateTokens(user);
+
+        refreshTokenStorageService.revoke(user.getId().toString());
+        refreshTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
+
+        return authResponse;
     }
 
     private AuthResponse generateTokens(User user) {
@@ -90,15 +101,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken)
                 .build();
-    }
-
-    @Override
-    public AuthResponse generateTokensAndStore(User user) {
-        AuthResponse authResponse = generateTokens(user);
-
-        tokenStorageService.revokeRefreshToken(user.getId().toString());
-        tokenStorageService.storeRefreshToken(user.getId().toString(), authResponse.getRefreshToken());
-
-        return authResponse;
     }
 }

@@ -8,10 +8,12 @@ import java.time.Duration;
 @Getter
 public enum CacheType {
 
-    REFRESH_TOKENS(CacheNames.REFRESH_TOKENS, Duration.ZERO, 10000);
+    REFRESH_TOKENS(CacheNames.REFRESH_TOKENS, Duration.ZERO, 1000),
+    RESET_TOKENS(CacheNames.RESET_TOKENS, Duration.ZERO, 100);
 
     public static class CacheNames {
         public static final String REFRESH_TOKENS = "refreshTokens";
+        public static final String RESET_TOKENS = "resetTokens";
     }
 
     private final String cacheName;

@@ -9,6 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,7 +45,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService oAuth2UserService;
     private final JwtUtil jwtUtil;
     private final UserMapper userMapper;
-    private final TokenStorageService tokenStorageService;
+    private final TokenStorageService<String> refreshTokenStorageService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -60,6 +61,7 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**", "/api/vouchers").permitAll()
+                        .requestMatchers("/api/auth/reset-password", "/reset-password/confirm").authenticated()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -95,8 +97,8 @@ public class SecurityConfig {
                 String accessToken = jwtUtil.generateToken(user);
                 String refreshToken = jwtUtil.generateRefreshToken(user);
 
-                tokenStorageService.revokeRefreshToken(user.getId().toString());
-                tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
+                refreshTokenStorageService.revoke(user.getId().toString());
+                refreshTokenStorageService.store(user.getId().toString(), refreshToken);
 
                 String targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
                         .queryParam("accessToken", accessToken)

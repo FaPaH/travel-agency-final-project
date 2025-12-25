@@ -27,11 +27,11 @@ CREATE TYPE user_role_type AS ENUM (
     );
 
 CREATE TYPE hotel_type AS ENUM (
-    'ONE_STAR',
-    'TWO_STAR',
-    'THREE_STAR',
-    'FOUR_STAR',
-    'FIVE_STAR'
+    'ONE_STARS',
+    'TWO_STARS',
+    'THREE_STARS',
+    'FOUR_STARS',
+    'FIVE_STARS'
     );
 
 CREATE TYPE tour_type AS ENUM (
