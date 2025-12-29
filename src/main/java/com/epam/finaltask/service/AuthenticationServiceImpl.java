@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     //TODO: OAuth implementation (check),
-    // password reset (current),
-    // rest User controller/service,
+    // password reset (check),
+    // rest User controller/service (current),
     // rest Voucher controller/service,
     // exception handling for rest,
     // logging
