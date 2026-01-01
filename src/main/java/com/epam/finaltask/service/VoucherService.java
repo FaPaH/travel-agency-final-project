@@ -15,12 +15,5 @@ public interface VoucherService {
     VoucherDTO changeHotStatus(String id, VoucherDTO voucherDTO);
     PaginatedResponse<VoucherDTO> findAllByUserId(String userId, Pageable pageable);
 
-    Page<VoucherDTO> findAllByTourType(TourType tourType, Pageable pageable);
-    Page<VoucherDTO> findAllByTransferType(String transferType, Pageable pageable);
-    Page<VoucherDTO> findAllByPrice(BigDecimal price, Pageable pageable);
-    Page<VoucherDTO> findAllByHotelType(HotelType hotelType, Pageable pageable);
-
     PaginatedResponse<VoucherDTO> findWithFilers(VoucherFiler voucherFiler, Pageable pageable);
-
-    Page<VoucherDTO> findAll(Pageable pageable);
 }

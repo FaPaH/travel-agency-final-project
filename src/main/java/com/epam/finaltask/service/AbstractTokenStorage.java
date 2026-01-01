@@ -34,4 +34,9 @@ public abstract class AbstractTokenStorage<T> implements TokenStorageService<T> 
     public void revoke(String id) {
         cache.evict(id);
     }
+
+    @Override
+    public void clearAll() {
+        cache.clear();
+    }
 }

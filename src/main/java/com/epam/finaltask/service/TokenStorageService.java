@@ -7,4 +7,6 @@ public interface TokenStorageService<T> {
     T get(String id);
 
     void revoke(String id);
+
+    void clearAll();
 }

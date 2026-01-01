@@ -1,7 +1,10 @@
 package com.epam.finaltask.config;
 
+import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.model.CacheType;
+import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.ResetToken;
+import com.epam.finaltask.model.VoucherPaginatedResponse;
 import com.epam.finaltask.service.AbstractTokenStorage;
 import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.util.JwtProperties;
@@ -31,12 +34,17 @@ public class CacheConfig {
 
     @Bean
     public TokenStorageService<String> refreshTokenStorage() {
-        return new AbstractTokenStorage<String>(cacheManager(), REFRESH_TOKENS, String.class) {};
+        return new AbstractTokenStorage<>(cacheManager(), REFRESH_TOKENS, String.class) {};
     }
 
     @Bean
     public TokenStorageService<ResetToken> resetTokenStorage() {
-        return new AbstractTokenStorage<ResetToken>(cacheManager(), RESET_TOKENS, ResetToken.class) {};
+        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, ResetToken.class) {};
+    }
+
+    @Bean
+    public TokenStorageService<VoucherPaginatedResponse> voucherPagesStorage() {
+        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, VoucherPaginatedResponse.class) {};
     }
 
     @Bean
@@ -66,6 +74,8 @@ public class CacheConfig {
         if (type == CacheType.REFRESH_TOKENS) {
             return Duration.ofSeconds(jwtProperties.getRefreshToken().getExpiration());
         } else if (type == CacheType.RESET_TOKENS) {
+            return Duration.ofSeconds(jwtProperties.getExpiration());
+        } else if (type == CacheType.VOUCHER_PAGES) {
             return Duration.ofSeconds(jwtProperties.getExpiration());
         }
         return type.getTtl();

@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +28,11 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
     private final UserRepository userRepository;
+    private final TokenStorageService<VoucherPaginatedResponse> voucherPageStorage;
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
+        voucherPageStorage.clearAll();
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
     }
 
@@ -49,6 +53,8 @@ public class VoucherServiceImpl implements VoucherService {
 
         voucher.setUser(userRepository.findById(UUID.fromString(userId)).get());
 
+        voucherPageStorage.clearAll();
+
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
@@ -60,6 +66,8 @@ public class VoucherServiceImpl implements VoucherService {
 
         Voucher voucher = voucherMapper.toVoucher(voucherDTO);
 
+        voucherPageStorage.clearAll();
+
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
@@ -68,6 +76,8 @@ public class VoucherServiceImpl implements VoucherService {
         if (!voucherRepository.existsById(UUID.fromString(voucherId))) {
             throw new IllegalStateException("Voucher not found");
         }
+
+        voucherPageStorage.clearAll();
 
         voucherRepository.deleteById(UUID.fromString(voucherId));
     }
@@ -80,50 +90,67 @@ public class VoucherServiceImpl implements VoucherService {
 
         voucherDTO.setIsHot(!voucherDTO.getIsHot());
 
+        voucherPageStorage.clearAll();
+
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
     }
 
     @Override
     public PaginatedResponse<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
+
+        String cacheKey = String.format("user_vouchers_id%s_p%d",
+                userId ,pageable.getPageNumber());
+
+        VoucherPaginatedResponse cached = voucherPageStorage.get(cacheKey);
+
+        if (cached != null) {
+            return cached;
+        }
+
         Page<VoucherDTO> dtoPage = voucherRepository.findAllByUserId(UUID.fromString(userId), pageable).map(voucherMapper::toVoucherDTO);
+        PaginatedResponse<VoucherDTO> paginatedResponse = PaginationMapper.toPaginatedResponse(dtoPage);
 
-        return PaginationMapper.toPaginatedResponse(dtoPage);
-    }
+        voucherPageStorage.store(cacheKey, (VoucherPaginatedResponse) paginatedResponse);
 
-    @Override
-    public Page<VoucherDTO> findAllByTourType(TourType tourType, Pageable pageable) {
-        return null;
-    }
-
-    @Override
-    public Page<VoucherDTO> findAllByTransferType(String transferType, Pageable pageable) {
-        return null;
-    }
-
-    @Override
-    public Page<VoucherDTO> findAllByPrice(BigDecimal price, Pageable pageable) {
-        return null;
-    }
-
-    @Override
-    public Page<VoucherDTO> findAllByHotelType(HotelType hotelType, Pageable pageable) {
-        return null;
+        return paginatedResponse;
     }
 
     @Override
     public PaginatedResponse<VoucherDTO> findWithFilers(VoucherFiler voucherFiler, Pageable pageable) {
 
-        //boolean isFirstPage = pageable.getPageNumber() == 0;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("MANAGER"));
+
+        boolean isDefaultRequest = !isAdmin && isFilterEmpty(voucherFiler);
+
+        String cacheKey = String.format("vouchers_p%d_s%d",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        if (isDefaultRequest) {
+            VoucherPaginatedResponse cached = voucherPageStorage.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+        }
 
         Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFiler);
 
         Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
+        PaginatedResponse<VoucherDTO> paginatedResponse = PaginationMapper.toPaginatedResponse(dtoPage);
 
-        return PaginationMapper.toPaginatedResponse(dtoPage);
+        if (isDefaultRequest) {
+            voucherPageStorage.store(cacheKey, (VoucherPaginatedResponse) paginatedResponse);
+        }
+
+        return paginatedResponse;
     }
 
-    @Override
-    public Page<VoucherDTO> findAll(Pageable pageable) {
-        return null;
+    private boolean isFilterEmpty(VoucherFiler filter) {
+        return filter.getTours() == null &&
+                filter.getMinPrice() == null &&
+                filter.getMaxPrice() == null &&
+                filter.getHotels() == null &&
+                filter.getTransfers() == null;
     }
 }
