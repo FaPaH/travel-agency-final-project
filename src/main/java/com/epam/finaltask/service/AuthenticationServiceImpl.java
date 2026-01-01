@@ -7,7 +7,6 @@ import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -16,10 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    //TODO: OAuth implementation (check),
-    // password reset (check),
-    // rest User controller/service (current),
-    // rest Voucher controller/service,
+    //TODO: rest Voucher controller/service,
     // exception handling for rest,
     // logging
 

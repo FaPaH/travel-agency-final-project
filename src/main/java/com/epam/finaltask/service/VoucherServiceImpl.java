@@ -1,69 +1,128 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.HotelType;
-import com.epam.finaltask.model.TourType;
+import com.epam.finaltask.mapper.PaginationMapper;
+import com.epam.finaltask.mapper.VoucherMapper;
+import com.epam.finaltask.model.*;
+import com.epam.finaltask.repository.UserRepository;
+import com.epam.finaltask.repository.VoucherRepository;
+import com.epam.finaltask.repository.specification.VoucherSpecifications;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class VoucherServiceImpl implements VoucherService {
 
     //TODO: Implement cashing for hot vouchers and most accessed vouchers
+    private final VoucherRepository voucherRepository;
+    private final VoucherMapper voucherMapper;
+    private final UserRepository userRepository;
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
-        return null;
+        return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
     }
 
     @Override
     public VoucherDTO order(String id, String userId) {
-        return null;
+
+        if (!userRepository.existsById(UUID.fromString(userId))) {
+            throw new RuntimeException("User not found");
+        } else if (!voucherRepository.existsById(UUID.fromString(id))) {
+            throw new RuntimeException("Voucher not found");
+        }
+
+        Voucher voucher = voucherRepository.findById(UUID.fromString(id)).get();
+
+        if (voucher.getUser() != null) {
+            throw new RuntimeException("Voucher already taken");
+        }
+
+        voucher.setUser(userRepository.findById(UUID.fromString(userId)).get());
+
+        return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
     @Override
     public VoucherDTO update(String id, VoucherDTO voucherDTO) {
-        return null;
+        if (!voucherRepository.existsById(UUID.fromString(id))) {
+            throw new RuntimeException("Voucher not found");
+        }
+
+        Voucher voucher = voucherMapper.toVoucher(voucherDTO);
+
+        return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
     @Override
     public void delete(String voucherId) {
+        if (!voucherRepository.existsById(UUID.fromString(voucherId))) {
+            throw new IllegalStateException("Voucher not found");
+        }
 
+        voucherRepository.deleteById(UUID.fromString(voucherId));
     }
 
     @Override
     public VoucherDTO changeHotStatus(String id, VoucherDTO voucherDTO) {
+        if (!voucherRepository.existsById(UUID.fromString(id))) {
+            throw new RuntimeException("Voucher not found");
+        }
+
+        voucherDTO.setIsHot(!voucherDTO.getIsHot());
+
+        return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
+    }
+
+    @Override
+    public Page<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
         return null;
     }
 
     @Override
-    public List<VoucherDTO> findAllByUserId(String userId) {
-        return List.of();
+    public Page<VoucherDTO> findAllByTourType(TourType tourType, Pageable pageable) {
+        return null;
     }
 
     @Override
-    public List<VoucherDTO> findAllByTourType(TourType tourType) {
-        return List.of();
+    public Page<VoucherDTO> findAllByTransferType(String transferType, Pageable pageable) {
+        return null;
     }
 
     @Override
-    public List<VoucherDTO> findAllByTransferType(String transferType) {
-        return List.of();
+    public Page<VoucherDTO> findAllByPrice(BigDecimal price, Pageable pageable) {
+        return null;
     }
 
     @Override
-    public List<VoucherDTO> findAllByPrice(Double price) {
-        return List.of();
+    public Page<VoucherDTO> findAllByHotelType(HotelType hotelType, Pageable pageable) {
+        return null;
     }
 
     @Override
-    public List<VoucherDTO> findAllByHotelType(HotelType hotelType) {
-        return List.of();
+    public PaginatedResponse<VoucherDTO> findWithFilers(VoucherFiler voucherFiler, Pageable pageable) {
+
+        //boolean isFirstPage = pageable.getPageNumber() == 0;
+
+        Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFiler);
+
+        Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
+
+        return PaginationMapper.toPaginatedResponse(dtoPage);
     }
 
     @Override
-    public List<VoucherDTO> findAll() {
-        return List.of();
+    public Page<VoucherDTO> findAll(Pageable pageable) {
+        return null;
     }
 }
