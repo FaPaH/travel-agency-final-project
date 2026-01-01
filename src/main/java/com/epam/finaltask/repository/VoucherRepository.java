@@ -14,7 +14,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface VoucherRepository extends JpaRepository<Voucher, UUID>, JpaSpecificationExecutor<Voucher> {
-    List<Voucher> findAllByUserId(UUID userId);
+    Page<Voucher> findAllByUserId(UUID userId, Pageable pageable);
     List<Voucher> findAllByTourType(TourType tourType);
     List<Voucher> findAllByTransferType(TransferType transferType);
     List<Voucher> findAllByPrice(BigDecimal price);

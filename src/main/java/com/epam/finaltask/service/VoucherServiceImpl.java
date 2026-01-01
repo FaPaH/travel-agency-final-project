@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -85,8 +84,10 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public Page<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
-        return null;
+    public PaginatedResponse<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
+        Page<VoucherDTO> dtoPage = voucherRepository.findAllByUserId(UUID.fromString(userId), pageable).map(voucherMapper::toVoucherDTO);
+
+        return PaginationMapper.toPaginatedResponse(dtoPage);
     }
 
     @Override

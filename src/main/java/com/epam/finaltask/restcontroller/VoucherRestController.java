@@ -1,20 +1,16 @@
 package com.epam.finaltask.restcontroller;
 
 import com.epam.finaltask.dto.VoucherDTO;
+import com.epam.finaltask.model.AdminVoucherFilter;
 import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.VoucherFiler;
 import com.epam.finaltask.service.VoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vouchers")
@@ -24,10 +20,25 @@ public class VoucherRestController {
     private final VoucherService voucherService;
 
     @GetMapping
-    public ResponseEntity<PaginatedResponse<VoucherDTO>> getAllVouchers(VoucherFiler filer,
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> getFilteredVouchers(VoucherFiler filer,
                                                                         @PageableDefault(size = 10, page = 0) Pageable pageable) {
 
         return ResponseEntity.ok().body(voucherService.findWithFilers(filer, pageable));
+    }
+
+    @GetMapping("/admin/vouchers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> getAdminFilteredVouchers(AdminVoucherFilter adminFiler,
+                                                                        @PageableDefault(size = 20, page = 0) Pageable pageable) {
+        return ResponseEntity.ok().body(voucherService.findWithFilers(adminFiler, pageable));
+    }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> findAllByUserId(@PathVariable String userId) {
+
+        return null;
     }
 
 //    @GetMapping
