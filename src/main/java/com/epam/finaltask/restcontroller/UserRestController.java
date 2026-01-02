@@ -16,6 +16,8 @@ public class UserRestController {
 
 	private final UserService userService;
 
+    //TODO: Add security annotations
+
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(UUID.fromString(id)));

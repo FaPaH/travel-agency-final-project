@@ -1,5 +1,6 @@
 package com.epam.finaltask.service;
 
+import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.VoucherMapper;
@@ -24,7 +25,6 @@ import java.util.UUID;
 @Transactional
 public class VoucherServiceImpl implements VoucherService {
 
-    //TODO: Implement cashing for hot vouchers and most accessed vouchers
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
     private final UserRepository userRepository;
@@ -46,12 +46,21 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         Voucher voucher = voucherRepository.findById(UUID.fromString(id)).get();
+        User user = userRepository.findById(UUID.fromString(userId)).get();
 
         if (voucher.getUser() != null) {
             throw new RuntimeException("Voucher already taken");
         }
 
-        voucher.setUser(userRepository.findById(UUID.fromString(userId)).get());
+        if (user.getBalance().subtract(voucher.getPrice()).compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Not enough balance");
+        }
+
+        user.setBalance(user.getBalance().subtract(voucher.getPrice()));
+
+        voucher.setUser(user);
+        voucher.setStatus(VoucherStatus.REGISTERED);
+        userRepository.save(user);
 
         voucherPageStorage.clearAll();
 
@@ -83,20 +92,28 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public VoucherDTO changeHotStatus(String id, VoucherDTO voucherDTO) {
+    public VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest) {
         if (!voucherRepository.existsById(UUID.fromString(id))) {
             throw new RuntimeException("Voucher not found");
         }
 
-        voucherDTO.setIsHot(!voucherDTO.getIsHot());
+        Voucher voucher = voucherRepository.findById(UUID.fromString(id)).get();
+
+        if (statusRequest.getVoucherStatus() != null) {
+            voucher.setStatus(statusRequest.getVoucherStatus());
+        } else if (statusRequest.getIsHot() != null) {
+            voucher.setIsHot(statusRequest.getIsHot());
+        } else {
+            throw new RuntimeException("Requested statuses is not set");
+        }
 
         voucherPageStorage.clearAll();
 
-        return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
+        return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
     @Override
-    public PaginatedResponse<VoucherDTO> findAllByUserId(String userId, Pageable pageable) {
+    public VoucherPaginatedResponse findAllByUserId(String userId, Pageable pageable) {
 
         String cacheKey = String.format("user_vouchers_id%s_p%d",
                 userId ,pageable.getPageNumber());
@@ -108,15 +125,15 @@ public class VoucherServiceImpl implements VoucherService {
         }
 
         Page<VoucherDTO> dtoPage = voucherRepository.findAllByUserId(UUID.fromString(userId), pageable).map(voucherMapper::toVoucherDTO);
-        PaginatedResponse<VoucherDTO> paginatedResponse = PaginationMapper.toPaginatedResponse(dtoPage);
+        VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage);
 
-        voucherPageStorage.store(cacheKey, (VoucherPaginatedResponse) paginatedResponse);
+        voucherPageStorage.store(cacheKey, paginatedResponse);
 
         return paginatedResponse;
     }
 
     @Override
-    public PaginatedResponse<VoucherDTO> findWithFilers(VoucherFiler voucherFiler, Pageable pageable) {
+    public VoucherPaginatedResponse findWithFilers(VoucherFiler voucherFiler, Pageable pageable) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
@@ -137,10 +154,10 @@ public class VoucherServiceImpl implements VoucherService {
         Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFiler);
 
         Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
-        PaginatedResponse<VoucherDTO> paginatedResponse = PaginationMapper.toPaginatedResponse(dtoPage);
+        VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage);
 
         if (isDefaultRequest) {
-            voucherPageStorage.store(cacheKey, (VoucherPaginatedResponse) paginatedResponse);
+            voucherPageStorage.store(cacheKey, paginatedResponse);
         }
 
         return paginatedResponse;
