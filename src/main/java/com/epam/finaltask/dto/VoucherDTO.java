@@ -3,6 +3,7 @@ package com.epam.finaltask.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public class VoucherDTO {
 
     private String description;
 
-    private Double price;
+    private BigDecimal price;
 
     private String tourType;
 

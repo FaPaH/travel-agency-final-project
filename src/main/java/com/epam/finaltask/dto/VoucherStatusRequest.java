@@ -1,5 +1,6 @@
 package com.epam.finaltask.dto;
 
+import com.epam.finaltask.model.VoucherStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,7 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenRequest {
+public class VoucherStatusRequest {
 
-    private String refreshToken;
+    private Boolean isHot;
+    private VoucherStatus voucherStatus;
 }

@@ -1,23 +1,17 @@
 package com.epam.finaltask.service;
 
-import java.util.List;
-
+import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.HotelType;
-import com.epam.finaltask.model.TourType;
+import com.epam.finaltask.model.*;
+import org.springframework.data.domain.Pageable;
 
 public interface VoucherService {
     VoucherDTO create(VoucherDTO voucherDTO);
     VoucherDTO order(String id, String userId);
     VoucherDTO update(String id, VoucherDTO voucherDTO);
     void delete(String voucherId);
-    VoucherDTO changeHotStatus(String id, VoucherDTO voucherDTO);
-    List<VoucherDTO> findAllByUserId(String userId);
+    VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest);;
+    VoucherPaginatedResponse findAllByUserId(String userId, Pageable pageable);
 
-    List<VoucherDTO> findAllByTourType(TourType tourType);
-    List<VoucherDTO> findAllByTransferType(String transferType);
-    List<VoucherDTO> findAllByPrice(Double price);
-    List<VoucherDTO> findAllByHotelType(HotelType hotelType);
-
-    List<VoucherDTO> findAll();
+    VoucherPaginatedResponse findWithFilers(VoucherFiler voucherFiler, Pageable pageable);
 }

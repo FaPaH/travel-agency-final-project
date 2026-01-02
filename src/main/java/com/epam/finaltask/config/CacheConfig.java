@@ -1,6 +1,12 @@
 package com.epam.finaltask.config;
 
+import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.model.CacheType;
+import com.epam.finaltask.model.PaginatedResponse;
+import com.epam.finaltask.model.ResetToken;
+import com.epam.finaltask.model.VoucherPaginatedResponse;
+import com.epam.finaltask.service.AbstractTokenStorage;
+import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.util.JwtProperties;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +18,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.epam.finaltask.model.CacheType.CacheNames.REFRESH_TOKENS;
+import static com.epam.finaltask.model.CacheType.CacheNames.RESET_TOKENS;
 
 @Configuration
 @EnableCaching
@@ -23,6 +31,21 @@ import java.util.stream.Collectors;
 public class CacheConfig {
 
     private final JwtProperties jwtProperties;
+
+    @Bean
+    public TokenStorageService<String> refreshTokenStorage() {
+        return new AbstractTokenStorage<>(cacheManager(), REFRESH_TOKENS, String.class) {};
+    }
+
+    @Bean
+    public TokenStorageService<ResetToken> resetTokenStorage() {
+        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, ResetToken.class) {};
+    }
+
+    @Bean
+    public TokenStorageService<VoucherPaginatedResponse> voucherPagesStorage() {
+        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, VoucherPaginatedResponse.class) {};
+    }
 
     @Bean
     public CacheManager cacheManager() {
@@ -48,11 +71,13 @@ public class CacheConfig {
     }
 
     private Duration resolveTtl(CacheType type) {
-
         if (type == CacheType.REFRESH_TOKENS) {
-            return Duration.ofMillis(jwtProperties.getRefreshToken().getExpiration());
+            return Duration.ofSeconds(jwtProperties.getRefreshToken().getExpiration());
+        } else if (type == CacheType.RESET_TOKENS) {
+            return Duration.ofSeconds(jwtProperties.getExpiration());
+        } else if (type == CacheType.VOUCHER_PAGES) {
+            return Duration.ofSeconds(jwtProperties.getExpiration());
         }
-
         return type.getTtl();
     }
 }

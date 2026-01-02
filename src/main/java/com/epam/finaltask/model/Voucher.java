@@ -62,5 +62,5 @@ public class Voucher extends BaseEntity{
 
     @ColumnDefault("false")
     @Column(name = "is_hot")
-    private boolean isHot;
+    private Boolean isHot;
 }

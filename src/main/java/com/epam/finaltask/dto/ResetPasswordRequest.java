@@ -1,13 +1,16 @@
 package com.epam.finaltask.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenRequest {
+@Builder
+public class ResetPasswordRequest {
 
-    private String refreshToken;
+    private String token;
+    private String newPassword;
 }

@@ -17,4 +17,6 @@ public interface UserService {
 
     UserDetailsService userDetailsService();
     User getCurrentUser();
+
+    UserDTO getUserByEmail(String email);
 }

@@ -2,31 +2,28 @@ package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.*;
 import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.model.AuthProvider;
 import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.util.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
+    //TODO: rest Voucher controller/service,
+    // exception handling for rest,
+    // logging
+
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
-    private final TokenStorageService tokenStorageService;
+    private final TokenStorageService<String> refreshTokenStorageService;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -40,19 +37,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .userDetailsService()
                 .loadUserByUsername(loginRequest.getUsername());
 
-        String jwtToken = jwtUtil.generateToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
-
-        if (tokenStorageService.getRefreshToken(user.getId().toString()) == null) {
-            tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
-        } else {
-            //delete old token
-            tokenStorageService.revokeRefreshToken(user.getId().toString());
-            //add new token
-            tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
-        }
-
-        return new AuthResponse(jwtToken, refreshToken);
+        return generateTokensAndStore(user);
     }
 
     @Override
@@ -63,16 +48,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(registerRequest.getEmail())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .role(Role.USER)
+                .authProvider(AuthProvider.LOCAL)
                 .build();
 
-        UserDTO newUser = userService.register(userMapper.toUserDTO(user));
+        User newUser = userMapper.toUser(userService.register(userMapper.toUserDTO(user)));
 
-        String jwtToken = jwtUtil.generateToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
-
-        tokenStorageService.storeRefreshToken(newUser.getId(), refreshToken);
-
-        return new AuthResponse(jwtToken, refreshToken);
+        return generateTokensAndStore(newUser);
     }
 
     @Override
@@ -80,38 +61,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         User user = userMapper.toUser(userService.getUserByUsername(jwtUtil.extractUsername(refreshRequest.getRefreshToken())));
 
-        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
-            throw new RuntimeException("Refresh token expired, please log in again");
+        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())
+                || refreshTokenStorageService.get(user.getId().toString()) == null) {
+            throw new RuntimeException("Please log in again");
         }
 
-        String jwtToken = jwtUtil.generateToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
-
-        if (tokenStorageService.getRefreshToken(user.getId().toString()) == null) {
-            tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
-        } else {
-            //delete old token
-            tokenStorageService.revokeRefreshToken(user.getId().toString());
-            //add new token
-            tokenStorageService.storeRefreshToken(user.getId().toString(), refreshToken);
-        }
-
-        return new AuthResponse(jwtToken, refreshToken);
+        return generateTokensAndStore(user);
     }
 
     @Override
-    public void logout(LogoutRequest logoutRequest,
-                       HttpServletRequest request,
-                       HttpServletResponse response) {
+    public void logout(LogoutRequest logoutRequest) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id",String.class);
 
-        if (auth != null && auth.isAuthenticated()) {
-            new SecurityContextLogoutHandler().logout(request, response, auth);
-
-            String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id",String.class);
-
-            tokenStorageService.revokeRefreshToken(id);
+        if (id != null) {
+            refreshTokenStorageService.revoke(id);
         }
+    }
+
+    @Override
+    public AuthResponse generateTokensAndStore(User user) {
+        AuthResponse authResponse = generateTokens(user);
+
+        refreshTokenStorageService.revoke(user.getId().toString());
+        refreshTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
+
+        return authResponse;
+    }
+
+    private AuthResponse generateTokens(User user) {
+        String jwtToken = jwtUtil.generateToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
+
+        return AuthResponse.builder()
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

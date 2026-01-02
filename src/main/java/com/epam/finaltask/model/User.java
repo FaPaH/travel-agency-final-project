@@ -3,6 +3,7 @@ package com.epam.finaltask.model;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -22,6 +23,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @Table(name = "users")
 public class User extends BaseEntity implements UserDetails {
+
+    @Id
+    @Column(name = "id")
+    @UuidGenerator
+    private UUID id;
 
     @Column(name = "username")
     private String username;
@@ -52,6 +58,11 @@ public class User extends BaseEntity implements UserDetails {
     @ColumnDefault("true")
     @Column(name = "user_status")
     private boolean active;
+
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auth_provider", columnDefinition = "auth_provider_type")
+    private AuthProvider authProvider;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

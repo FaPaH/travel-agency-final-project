@@ -1,12 +1,12 @@
 package com.epam.finaltask.service;
 
-import java.util.UUID;
+public interface TokenStorageService<T> {
 
-public interface TokenStorageService {
+    void store(String id, T token);
 
-    String storeRefreshToken(String id, String refreshToken);
+    T get(String id);
 
-    String getRefreshToken(String id);
+    void revoke(String id);
 
-    void revokeRefreshToken(String id);
+    void clearAll();
 }
