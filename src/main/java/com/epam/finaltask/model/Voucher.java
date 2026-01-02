@@ -5,21 +5,26 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"user"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Table(name = "vouchers")
 public class Voucher extends BaseEntity{
+
+    @Id
+    @Column(name = "id")
+    @UuidGenerator
+    private UUID id;
 
     @Column(name = "title")
     private String title;
