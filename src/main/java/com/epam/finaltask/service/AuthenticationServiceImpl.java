@@ -1,6 +1,7 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.*;
+import com.epam.finaltask.exception.InvalidTokenException;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.AuthProvider;
 import com.epam.finaltask.model.Role;
@@ -9,6 +10,7 @@ import com.epam.finaltask.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,11 +25,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
-    private final TokenStorageService<String> refreshTokenStorageService;
+    private final TokenStorageService<String> JwtTokenStorageService;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
-
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginRequest.getUsername(),
                 loginRequest.getPassword()
@@ -58,33 +59,33 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthResponse refresh(RefreshTokenRequest refreshRequest) {
+        if (JwtTokenStorageService.get(jwtUtil.extractUsername(refreshRequest.getRefreshToken())) == null
+                || jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
+            throw new InvalidTokenException("Token has expired, please login again");
+        }
 
         User user = userMapper.toUser(userService.getUserByUsername(jwtUtil.extractUsername(refreshRequest.getRefreshToken())));
-
-        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())
-                || refreshTokenStorageService.get(user.getId().toString()) == null) {
-            throw new RuntimeException("Please log in again");
-        }
 
         return generateTokensAndStore(user);
     }
 
     @Override
     public void logout(LogoutRequest logoutRequest) {
-
-        String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id",String.class);
+        String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id", String.class);
 
         if (id != null) {
-            refreshTokenStorageService.revoke(id);
+            JwtTokenStorageService.revoke(id);
         }
+
+        SecurityContextHolder.clearContext();
     }
 
     @Override
     public AuthResponse generateTokensAndStore(User user) {
         AuthResponse authResponse = generateTokens(user);
 
-        refreshTokenStorageService.revoke(user.getId().toString());
-        refreshTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
+        JwtTokenStorageService.revoke(user.getId().toString());
+        JwtTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
 
         return authResponse;
     }

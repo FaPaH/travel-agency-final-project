@@ -9,6 +9,7 @@ import com.epam.finaltask.model.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
     Optional<User> findUserByUsername(String username);
     Optional<User> findUserByEmail(String email);
 }

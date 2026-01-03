@@ -4,7 +4,10 @@ import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +28,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO register(UserDTO userDTO) {
 		if (userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new RuntimeException("Username is already registered");
+			throw new DataIntegrityViolationException("Username is already registered");
+		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
+			throw new DataIntegrityViolationException("Email is already registered");
 		}
 
 		User user = userMapper.toUser(userDTO);
@@ -37,7 +42,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO updateUser(String username, UserDTO userDTO) {
 		if (!userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new RuntimeException("User not found");
+			throw new EntityNotFoundException("User not found");
+		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
+			throw new DataIntegrityViolationException("Email is already in use");
 		}
 
 		User user = userMapper.toUser(userDTO);
@@ -48,14 +55,14 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO getUserByUsername(String username) {
 		return userMapper.toUserDTO(userRepository.findUserByUsername(username).orElseThrow(
-				() -> new RuntimeException("User not found")
+				() -> new EntityNotFoundException("User not found")
 		));
 	}
 
 	@Override
 	public UserDTO changeAccountStatus(UserDTO userDTO) {
 		if (!userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new RuntimeException("User not found");
+			throw new EntityNotFoundException("User not found");
 		}
 
 		User user = userMapper.toUser(userDTO);
@@ -67,7 +74,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO getUserById(UUID id) {
 		return userMapper.toUserDTO(userRepository.findById(id).orElseThrow(
-				() -> new RuntimeException("User not found")
+				() -> new EntityNotFoundException("User not found")
 		));
 	}
 
@@ -85,13 +92,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO getUserByEmail(String email) {
 		return userMapper.toUserDTO(userRepository.findUserByEmail(email).orElseThrow(
-				() -> new RuntimeException("User not found")
+				() -> new EntityNotFoundException("User not found")
 		));
 	}
 
 	private User getByUsername(String username) {
 		return userRepository.findUserByUsername(username).orElseThrow(
-				() -> new RuntimeException("User not found")
+				() -> new EntityNotFoundException("User not found")
 		);
 	}
 }

@@ -4,6 +4,7 @@ import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.ResetTokenUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +20,16 @@ public class ResetServiceImpl implements ResetService {
     private final TokenStorageService<ResetToken> resetTokenStorageService;
     private final MailService mailService;
 
+    private final static String RESET_URL = "http://localhost:8080/api/auth/reset-password?token=";
+    private final static String RESET_BODY = "Click the link below to reset your password.\n";
+
     @Override
     public void proceedReset(String email) {
         UserDTO userDTO = userService.getUserByEmail(email);
+
+        if (userDTO == null) {
+            throw new EntityNotFoundException("User with email not found");
+        }
 
         String token = resetTokenUtil.generateResetToken();
 
@@ -33,8 +41,8 @@ public class ResetServiceImpl implements ResetService {
 
         resetTokenStorageService.store(token, resetToken);
 
-        String resetUrl = "http://localhost:8080/api/auth/reset-password?token=" + token;
-        String body = "Click the link below to reset your password.\n" + resetUrl;
+        String resetUrl = RESET_URL + token;
+        String body = RESET_BODY + resetUrl;
 
         mailService.sendTextMail(userDTO.getEmail(), resetToken.getToken(), body);
     }

@@ -2,6 +2,7 @@ package com.epam.finaltask.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 @NoArgsConstructor
 public class LoginRequest {
 
+    @NotBlank(message = "Please provide username")
     private String username;
 
+    @NotBlank(message = "Please provide password")
     private String password;
 }

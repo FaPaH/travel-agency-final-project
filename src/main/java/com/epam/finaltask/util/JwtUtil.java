@@ -28,6 +28,7 @@ public class JwtUtil {
             claims.put("id", customUserDetails.getId());
             claims.put("username", customUserDetails.getUsername());
             claims.put("role", customUserDetails.getRole());
+            claims.put("isLogout", false);
         }
         return generateToken(claims, userDetails);
     }
