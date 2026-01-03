@@ -2,13 +2,17 @@ package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
+import com.epam.finaltask.exception.AlreadyInUseException;
+import com.epam.finaltask.exception.NotEnoughBalanceException;
 import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.VoucherMapper;
 import com.epam.finaltask.model.*;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.repository.VoucherRepository;
 import com.epam.finaltask.repository.specification.VoucherSpecifications;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -39,21 +43,20 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO order(String id, String userId) {
 
-        if (!userRepository.existsById(UUID.fromString(userId))) {
-            throw new RuntimeException("User not found");
-        } else if (!voucherRepository.existsById(UUID.fromString(id))) {
-            throw new RuntimeException("Voucher not found");
-        }
+        Voucher voucher = voucherRepository.findById(UUID.fromString(id)).orElseThrow(
+                () -> new EntityNotFoundException("Voucher not found")
+        );
 
-        Voucher voucher = voucherRepository.findById(UUID.fromString(id)).get();
-        User user = userRepository.findById(UUID.fromString(userId)).get();
+        User user = userRepository.findById(UUID.fromString(userId)).orElseThrow(
+                () -> new EntityNotFoundException("User not found")
+        );
 
         if (voucher.getUser() != null) {
-            throw new RuntimeException("Voucher already taken");
+            throw new AlreadyInUseException("Voucher already taken");
         }
 
         if (user.getBalance().subtract(voucher.getPrice()).compareTo(BigDecimal.ZERO) < 0) {
-            throw new RuntimeException("Not enough balance");
+            throw new NotEnoughBalanceException("Not enough balance");
         }
 
         user.setBalance(user.getBalance().subtract(voucher.getPrice()));
@@ -70,7 +73,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO update(String id, VoucherDTO voucherDTO) {
         if (!voucherRepository.existsById(UUID.fromString(id))) {
-            throw new RuntimeException("Voucher not found");
+            throw new EntityNotFoundException("Voucher not found");
         }
 
         Voucher voucher = voucherMapper.toVoucher(voucherDTO);
@@ -83,7 +86,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public void delete(String voucherId) {
         if (!voucherRepository.existsById(UUID.fromString(voucherId))) {
-            throw new IllegalStateException("Voucher not found");
+            throw new EntityNotFoundException("Voucher not found");
         }
 
         voucherPageStorage.clearAll();
@@ -93,23 +96,25 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest) {
-        if (!voucherRepository.existsById(UUID.fromString(id))) {
-            throw new RuntimeException("Voucher not found");
+        try {
+            Voucher voucher = voucherRepository.findById(UUID.fromString(id)).orElseThrow(
+                    () -> new EntityNotFoundException("Voucher not found")
+            );
+
+            if (statusRequest.getVoucherStatus() != null) {
+                voucher.setStatus(VoucherStatus.valueOf(statusRequest.getVoucherStatus()));
+            } else if (statusRequest.getIsHot() != null) {
+                voucher.setIsHot(statusRequest.getIsHot());
+            } else {
+                throw new DataIntegrityViolationException("Requested statuses is not set");
+            }
+
+            voucherPageStorage.clearAll();
+
+            return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
+        } catch (IllegalArgumentException e) {
+            throw new DataIntegrityViolationException("Status is not valid");
         }
-
-        Voucher voucher = voucherRepository.findById(UUID.fromString(id)).get();
-
-        if (statusRequest.getVoucherStatus() != null) {
-            voucher.setStatus(statusRequest.getVoucherStatus());
-        } else if (statusRequest.getIsHot() != null) {
-            voucher.setIsHot(statusRequest.getIsHot());
-        } else {
-            throw new RuntimeException("Requested statuses is not set");
-        }
-
-        voucherPageStorage.clearAll();
-
-        return voucherMapper.toVoucherDTO(voucherRepository.save(voucher));
     }
 
     @Override

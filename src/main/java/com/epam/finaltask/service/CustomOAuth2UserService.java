@@ -43,7 +43,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             if ("github".equalsIgnoreCase(registrationId) || "facebook".equalsIgnoreCase(registrationId)) {
                 user = userRepository.findUserByUsername(login).orElse(null);
             } else {
-                throw new RuntimeException("Email not found");
+                throw new OAuth2AuthenticationException("Cant find email or login");
             }
         } else {
             user = userRepository.findUserByEmail(email).orElse(null);

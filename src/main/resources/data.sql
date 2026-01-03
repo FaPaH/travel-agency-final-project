@@ -11,7 +11,7 @@ VALUES
 ('22222222-2222-2222-2222-222222222222', 'manager_lisa', '$2a$12$I2B/SnRFYLi2d5ElTrIfdedCZ8ybSrouvAz/GjKFOmOmcfNTrZIKS', 'MANAGER', '+1987654321', 'lisa@travel.com', 0.00, TRUE, 'LOCAL'),
 
 -- bob123
-('33333333-3333-3333-3333-333333333333', 'traveler_bob', '$2a$12$5ITpyTr6k2GnQPGPueEhTeekbsctqYRwdeRo/eXB6IQKRz25SzumK', 'USER', '+1122334455', 'fapah2000@gmail.com', 5000.00, TRUE, 'LOCAL'),
+('33333333-3333-3333-3333-333333333333', 'traveler_bob', '$2a$12$5ITpyTr6k2GnQPGPueEhTeekbsctqYRwdeRo/eXB6IQKRz25SzumK', 'USER', '+1122334455', 'bob@traveler.com', 5000.00, TRUE, 'LOCAL'),
 
 --  student123
 ('44444444-4444-4444-4444-444444444444', 'poor_student', '$2a$12$ZV6JcqThPUCXALlU.lNBe.lK/RTzjT5EaxrWrIRkSeFA5mMK0sDF.', 'USER', NULL, 'student@uni.edu', 10.00, FALSE, 'LOCAL');

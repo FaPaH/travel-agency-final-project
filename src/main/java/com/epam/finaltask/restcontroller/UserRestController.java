@@ -6,6 +6,7 @@ import com.epam.finaltask.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +22,12 @@ public class UserRestController {
 
 	private final UserService userService;
 
-    //TODO: Add security annotations
-
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
     public ResponseEntity<UserDTO> getUserById(@AuthenticationPrincipal User user, @PathVariable String id) {
 
         if (!Objects.equals(user.getId().toString(), id)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new AccessDeniedException("Cannot access this resource");
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(userService.getUserById(UUID.fromString(id)));
@@ -41,7 +40,7 @@ public class UserRestController {
                                                @RequestBody UserDTO userDTO) {
 
         if (!Objects.equals(user.getId().toString(), userDTO.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new AccessDeniedException("Cannot access this resource");
         }
 
         userService.updateUser(username, userDTO);
