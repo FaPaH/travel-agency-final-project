@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -20,7 +21,7 @@ public class ErrorResponse {
     private LocalDateTime timestamp;
 
     private String path;
-    private String traceId;
+    private UUID traceId = UUID.randomUUID();
 
     private List<ValidationError> validationErrors;
 

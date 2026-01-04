@@ -1,6 +1,7 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.dto.UserDTO;
+import com.epam.finaltask.exception.AlreadyInUseException;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
@@ -28,9 +29,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO register(UserDTO userDTO) {
 		if (userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new DataIntegrityViolationException("Username is already registered");
+			throw new AlreadyInUseException("Username is already registered");
 		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
-			throw new DataIntegrityViolationException("Email is already registered");
+			throw new AlreadyInUseException("Email is already registered");
 		}
 
 		User user = userMapper.toUser(userDTO);
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
 		if (!userRepository.existsByUsername(userDTO.getUsername())) {
 			throw new EntityNotFoundException("User not found");
 		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
-			throw new DataIntegrityViolationException("Email is already in use");
+			throw new AlreadyInUseException("Email is already in use");
 		}
 
 		User user = userMapper.toUser(userDTO);
