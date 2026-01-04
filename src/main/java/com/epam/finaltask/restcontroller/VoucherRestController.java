@@ -2,10 +2,10 @@ package com.epam.finaltask.restcontroller;
 
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.AdminVoucherFilter;
+import com.epam.finaltask.model.AdminVoucherFilterRequest;
 import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.User;
-import com.epam.finaltask.model.VoucherFiler;
+import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.service.VoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
-
 @RestController
 @RequestMapping("/api/vouchers")
 @RequiredArgsConstructor
@@ -27,16 +25,16 @@ public class VoucherRestController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
-    public ResponseEntity<PaginatedResponse<VoucherDTO>> getFilteredVouchers(VoucherFiler filer,
-                                                                        @PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> getFilteredVouchers(VoucherFilerRequest filer,
+                                                                             @PageableDefault(size = 10, page = 0) Pageable pageable) {
 
         return ResponseEntity.ok().body(voucherService.findWithFilers(filer, pageable));
     }
 
     @GetMapping("/admin")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<PaginatedResponse<VoucherDTO>> getAdminFilteredVouchers(AdminVoucherFilter adminFiler,
-                                                                        @PageableDefault(size = 20, page = 0) Pageable pageable) {
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> getAdminFilteredVouchers(AdminVoucherFilterRequest adminFiler,
+                                                                                  @PageableDefault(size = 20, page = 0) Pageable pageable) {
         return ResponseEntity.ok().body(voucherService.findWithFilers(adminFiler, pageable));
     }
 

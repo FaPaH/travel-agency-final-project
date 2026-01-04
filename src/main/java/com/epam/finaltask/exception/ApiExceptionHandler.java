@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.ConversionFailedException;
@@ -15,7 +16,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -25,6 +25,7 @@ import java.util.List;
 
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
+@Slf4j
 public class ApiExceptionHandler {
 
     //TODO: All exception handling here
@@ -121,28 +122,26 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(JwtException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ErrorResponse> handleJwtException(
             JwtException ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generateErrorResponse(
                 request.getRequestURI(),
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.UNAUTHORIZED,
                 "Invalid token",
                 null)
         );
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ErrorResponse> handleExpiredJwt(
             ExpiredJwtException ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generateErrorResponse(
                 request.getRequestURI(),
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.UNAUTHORIZED,
                 "Token is expired",
                 null)
         );
@@ -175,6 +174,9 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(
             Exception ex,
             HttpServletRequest request) {
+
+        log.error("Unexpected in {} with cause = {}",
+                request.getRequestURI(), ex.getCause() != null ? ex.getCause() : "NULL", ex);
 
         return ResponseEntity.badRequest().body(generateErrorResponse(
                 request.getRequestURI(),

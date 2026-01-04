@@ -5,6 +5,7 @@ import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.service.AuthenticationService;
 import com.epam.finaltask.service.ResetService;
 import com.epam.finaltask.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,22 +24,22 @@ public class AuthenticationRestController {
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponse> signUp(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<AuthResponse> signUp(@RequestBody @Valid RegisterRequest registerRequest) {
         return ResponseEntity.ok().body(authenticationService.register(registerRequest));
     }
 
     @PostMapping("/sign-in")
-    public ResponseEntity<AuthResponse> signIn(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> signIn(@RequestBody @Valid LoginRequest loginRequest) {
         return ResponseEntity.ok().body(authenticationService.login(loginRequest));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
         return ResponseEntity.ok().body(authenticationService.refresh(refreshTokenRequest));
     }
 
     @PostMapping("/sign-out")
-    public ResponseEntity<Void> logout(@RequestBody LogoutRequest logoutRequest) {
+    public ResponseEntity<Void> logout(@RequestBody @Valid LogoutRequest logoutRequest) {
         authenticationService.logout(logoutRequest);
         return ResponseEntity.ok().build();
     }
@@ -58,7 +59,7 @@ public class AuthenticationRestController {
 
     @PostMapping("/reset-password")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> requestReset(@RequestBody ResetRequest request) {
+    public ResponseEntity<String> requestReset(@RequestBody @Valid ResetRequest request) {
         resetService.proceedReset(request.getEmail());
         return ResponseEntity.ok("If the email is registered, you'll get a reset link");
     }
@@ -75,7 +76,7 @@ public class AuthenticationRestController {
 
     @PostMapping("/reset-password/confirm")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         if(!resetService.validateToken(request.getToken())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token is invalid or expired");
         }

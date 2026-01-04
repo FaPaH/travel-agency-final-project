@@ -1,5 +1,6 @@
 package com.epam.finaltask.repository.specification;
 
+import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.model.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
@@ -11,11 +12,11 @@ import java.util.List;
 
 public class VoucherSpecifications {
 
-    public static Specification<Voucher> withFilters(VoucherFiler filter) {
+    public static Specification<Voucher> withFilters(VoucherFilerRequest filter) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter instanceof AdminVoucherFilter adminFilter) {
+            if (filter instanceof AdminVoucherFilterRequest adminFilter) {
                 if (adminFilter.getStatuses() != null && !adminFilter.getStatuses().isEmpty()) {
                     predicates.add(root.get("status").in(adminFilter.getStatuses()));
                 }
@@ -35,7 +36,7 @@ public class VoucherSpecifications {
         };
     }
 
-    private static void addCommonPredicates(List<Predicate> predicates, Root<Voucher> root, CriteriaBuilder cb, VoucherFiler filter) {
+    private static void addCommonPredicates(List<Predicate> predicates, Root<Voucher> root, CriteriaBuilder cb, VoucherFilerRequest filter) {
 
         if (filter.getTours() != null && !filter.getTours().isEmpty()) {
             predicates.add(root.get("tourType").in(filter.getTours()));
