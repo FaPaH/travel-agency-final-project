@@ -2,6 +2,8 @@ package com.epam.finaltask.exception;
 
 import com.epam.finaltask.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;
@@ -13,8 +15,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,7 +47,7 @@ public class ApiExceptionHandler {
             NotEnoughBalanceException ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.NOT_ACCEPTABLE,
                 ex.getMessage(),
@@ -69,7 +73,7 @@ public class ApiExceptionHandler {
             AlreadyInUseException ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.CONFLICT,
                 ex.getMessage(),
@@ -77,12 +81,12 @@ public class ApiExceptionHandler {
         );
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler({EntityNotFoundException.class, NoResourceFoundException.class})
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
-            EntityNotFoundException ex,
+            Exception ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.NOT_FOUND,
                 ex.getMessage(),
@@ -95,7 +99,7 @@ public class ApiExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "Conversion error",
@@ -112,6 +116,34 @@ public class ApiExceptionHandler {
                 request.getRequestURI(),
                 HttpStatus.BAD_REQUEST,
                 ex.getMessage(),
+                null)
+        );
+    }
+
+    @ExceptionHandler(JwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ErrorResponse> handleJwtException(
+            JwtException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.badRequest().body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.BAD_REQUEST,
+                "Invalid token",
+                null)
+        );
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ErrorResponse> handleExpiredJwt(
+            ExpiredJwtException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.badRequest().body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.BAD_REQUEST,
+                "Token is expired",
                 null)
         );
     }
@@ -136,6 +168,19 @@ public class ApiExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "Validation error",
                 validationErrors)
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(
+            Exception ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.badRequest().body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage(),
+                null)
         );
     }
 
