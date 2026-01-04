@@ -1,5 +1,6 @@
 package com.epam.finaltask.service;
 
+import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.model.*;
@@ -13,5 +14,5 @@ public interface VoucherService {
     VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest);;
     VoucherPaginatedResponse findAllByUserId(String userId, Pageable pageable);
 
-    VoucherPaginatedResponse findWithFilers(VoucherFiler voucherFiler, Pageable pageable);
+    VoucherPaginatedResponse findWithFilers(VoucherFilerRequest voucherFilerRequest, Pageable pageable);
 }

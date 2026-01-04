@@ -2,8 +2,11 @@ package com.epam.finaltask.exception;
 
 import com.epam.finaltask.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.ConversionFailedException;
@@ -15,12 +18,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
+@Slf4j
 public class ApiExceptionHandler {
 
     //TODO: All exception handling here
@@ -43,7 +48,7 @@ public class ApiExceptionHandler {
             NotEnoughBalanceException ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.NOT_ACCEPTABLE,
                 ex.getMessage(),
@@ -69,7 +74,7 @@ public class ApiExceptionHandler {
             AlreadyInUseException ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.CONFLICT,
                 ex.getMessage(),
@@ -77,12 +82,12 @@ public class ApiExceptionHandler {
         );
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler({EntityNotFoundException.class, NoResourceFoundException.class})
     public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
-            EntityNotFoundException ex,
+            Exception ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.NOT_FOUND,
                 ex.getMessage(),
@@ -95,7 +100,7 @@ public class ApiExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "Conversion error",
@@ -112,6 +117,32 @@ public class ApiExceptionHandler {
                 request.getRequestURI(),
                 HttpStatus.BAD_REQUEST,
                 ex.getMessage(),
+                null)
+        );
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ErrorResponse> handleJwtException(
+            JwtException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.UNAUTHORIZED,
+                "Invalid token",
+                null)
+        );
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredJwt(
+            ExpiredJwtException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.UNAUTHORIZED,
+                "Token is expired",
                 null)
         );
     }
@@ -136,6 +167,22 @@ public class ApiExceptionHandler {
                 HttpStatus.BAD_REQUEST,
                 "Validation error",
                 validationErrors)
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleException(
+            Exception ex,
+            HttpServletRequest request) {
+
+        log.error("Unexpected in {} with cause = {}",
+                request.getRequestURI(), ex.getCause() != null ? ex.getCause() : "NULL", ex);
+
+        return ResponseEntity.badRequest().body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage(),
+                null)
         );
     }
 

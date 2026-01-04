@@ -1,5 +1,6 @@
 package com.epam.finaltask.service;
 
+import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.exception.AlreadyInUseException;
@@ -138,13 +139,13 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public VoucherPaginatedResponse findWithFilers(VoucherFiler voucherFiler, Pageable pageable) {
+    public VoucherPaginatedResponse findWithFilers(VoucherFilerRequest voucherFilerRequest, Pageable pageable) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth != null && auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("MANAGER"));
 
-        boolean isDefaultRequest = !isAdmin && isFilterEmpty(voucherFiler);
+        boolean isDefaultRequest = !isAdmin && isFilterEmpty(voucherFilerRequest);
 
         String cacheKey = String.format("vouchers_p%d_s%d",
                 pageable.getPageNumber(), pageable.getPageSize());
@@ -156,7 +157,7 @@ public class VoucherServiceImpl implements VoucherService {
             }
         }
 
-        Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFiler);
+        Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFilerRequest);
 
         Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
         VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage);
@@ -168,7 +169,7 @@ public class VoucherServiceImpl implements VoucherService {
         return paginatedResponse;
     }
 
-    private boolean isFilterEmpty(VoucherFiler filter) {
+    private boolean isFilterEmpty(VoucherFilerRequest filter) {
         return filter.getTours() == null &&
                 filter.getMinPrice() == null &&
                 filter.getMaxPrice() == null &&
