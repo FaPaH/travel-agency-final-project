@@ -8,7 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(exclude = {"newPassword"})
 public class ResetPasswordRequest {
 
     @NotBlank(message = "Token not found")
@@ -16,5 +15,6 @@ public class ResetPasswordRequest {
 
     @NotBlank(message = "Please provide password")
     @Size(min = 8, message = "Password must be at least 8 characters long")
+    @ToString.Exclude
     private String newPassword;
 }

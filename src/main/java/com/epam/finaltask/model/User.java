@@ -17,7 +17,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {"password"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -33,7 +32,7 @@ public class User extends BaseEntity implements UserDetails {
     private String username;
 
     @Column(name = "password")
-    @JsonIgnore
+    @ToString.Exclude
     private String password;
 
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Override
-	public UserDTO register(UserDTO userDTO) {
+	public UserDTO register(UserDTO userDTO, String password) {
 		if (userRepository.existsByUsername(userDTO.getUsername())) {
 			throw new AlreadyInUseException("Username is already registered");
 		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		User user = userMapper.toUser(userDTO);
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		user.setPassword(password);
 
 		return userMapper.toUserDTO(userRepository.save(user));
 	}

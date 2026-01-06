@@ -6,12 +6,12 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"password"})
 public class LoginRequest {
 
     @NotBlank(message = "Please provide username")
     private String username;
 
     @NotBlank(message = "Please provide password")
+    @ToString.Exclude
     private String password;
 }

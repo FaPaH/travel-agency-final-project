@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +27,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
     private final TokenStorageService<String> JwtTokenStorageService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -43,16 +45,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthResponse register(RegisterRequest registerRequest) {
-        User user = User.builder()
+        UserDTO userDto = UserDTO.builder()
                 .username(registerRequest.getUsername())
-                .password(registerRequest.getPassword())
                 .email(registerRequest.getEmail())
                 .phoneNumber(registerRequest.getPhoneNumber())
-                .role(Role.USER)
-                .authProvider(AuthProvider.LOCAL)
+                .role(Role.USER.toString())
+                .authProvider(AuthProvider.LOCAL.toString())
                 .build();
 
-        User newUser = userMapper.toUser(userService.register(userMapper.toUserDTO(user)));
+        User newUser = userMapper.toUser(
+                userService.register(
+                        userDto,
+                        passwordEncoder.encode(registerRequest.getPassword())
+                )
+        );
 
         return generateTokensAndStore(newUser);
     }
