@@ -2,7 +2,7 @@ package com.epam.finaltask.restcontroller;
 
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.AdminVoucherFilterRequest;
+import com.epam.finaltask.dto.AdminVoucherFilterRequest;
 import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.dto.VoucherFilerRequest;
@@ -12,9 +12,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/vouchers")
@@ -38,10 +41,15 @@ public class VoucherRestController {
         return ResponseEntity.ok().body(voucherService.findWithFilers(adminFiler, pageable));
     }
 
-    @GetMapping("/admin/user/{userId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<PaginatedResponse<VoucherDTO>> adminFindAllByUserId(@PathVariable String userId,
-                                                                              @PageableDefault(size = 20, page = 0) Pageable pageable) {
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> findAllByUserId(@AuthenticationPrincipal User user,
+                                                                         @PathVariable String userId,
+                                                                         @PageableDefault(size = 20, page = 0) Pageable pageable) {
+
+        if (!Objects.equals(user.getId().toString(), userId)) {
+            throw new AccessDeniedException("Cannot access this resource");
+        }
 
         return ResponseEntity.ok().body(voucherService.findAllByUserId(userId, pageable));
     }

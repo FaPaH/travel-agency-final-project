@@ -10,7 +10,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -35,24 +34,21 @@ public class UserRestController {
 
     @PatchMapping("/update/{username}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
-    public ResponseEntity<Void> updateUserById(@AuthenticationPrincipal User user,
-                                               @PathVariable String username,
-                                               @RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUserById(@AuthenticationPrincipal User user,
+                                                       @PathVariable String username,
+                                                       @RequestBody UserDTO userDTO) {
 
         if (!Objects.equals(user.getId().toString(), userDTO.getId())) {
             throw new AccessDeniedException("Cannot access this resource");
         }
 
-        userService.updateUser(username, userDTO);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(userService.updateUser(username, userDTO));
     }
 
     @PatchMapping("/change-account-status/")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> changeAccountStatus(@RequestBody UserDTO userDTO) {
-        userService.changeAccountStatus(userDTO);
+    public ResponseEntity<UserDTO> changeAccountStatus(@RequestBody UserDTO userDTO) {
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(userService.changeAccountStatus(userDTO));
     }
 }

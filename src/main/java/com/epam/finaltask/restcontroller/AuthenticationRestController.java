@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +20,6 @@ public class AuthenticationRestController {
     private final AuthenticationService authenticationService;
     private final ResetService resetService;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponse> signUp(@RequestBody @Valid RegisterRequest registerRequest) {
@@ -82,10 +80,9 @@ public class AuthenticationRestController {
         }
 
         ResetToken tokenRecord = resetService.getResetToken(request.getToken());
-        UserDTO user = tokenRecord.getUserDTO();
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userService.updateUser(user.getUsername(), user);
+        userService.updateUserPassword(request.getNewPassword(), tokenRecord.getUserDTO());
+
         resetService.removeResetToken(tokenRecord.getToken());
 
         return ResponseEntity.ok("Password updated");

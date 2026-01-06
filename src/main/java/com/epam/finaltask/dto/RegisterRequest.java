@@ -1,15 +1,12 @@
 package com.epam.finaltask.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.regex.qual.Regex;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = {"password"})
 public class RegisterRequest {
 
     @NotBlank(message = "Please provide username")

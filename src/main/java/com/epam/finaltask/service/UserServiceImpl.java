@@ -52,6 +52,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public UserDTO updateUserPassword(String newPassword, UserDTO userDTO) {
+		User user = userMapper.toUser(userDTO);
+
+		user.setPassword(passwordEncoder.encode(newPassword));
+
+		return userMapper.toUserDTO(userRepository.save(user));
+	}
+
+
+	@Override
 	public UserDTO getUserByUsername(String username) {
 		return userMapper.toUserDTO(userRepository.findUserByUsername(username).orElseThrow(
 				() -> new EntityNotFoundException("User not found")

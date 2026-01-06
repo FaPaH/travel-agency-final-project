@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
@@ -16,7 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {"role", "vouchers"})
+@ToString(exclude = {"password"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -32,6 +33,7 @@ public class User extends BaseEntity implements UserDetails {
     private String username;
 
     @Column(name = "password")
+    @JsonIgnore
     private String password;
 
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

@@ -1,5 +1,6 @@
 package com.epam.finaltask.repository.specification;
 
+import com.epam.finaltask.dto.AdminVoucherFilterRequest;
 import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.model.*;
 import jakarta.persistence.criteria.CriteriaBuilder;

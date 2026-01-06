@@ -12,6 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -28,7 +29,18 @@ import java.util.List;
 @Slf4j
 public class ApiExceptionHandler {
 
-    //TODO: All exception handling here
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.FORBIDDEN,
+                ex.getMessage(),
+                null)
+        );
+    }
 
     @ExceptionHandler(OAuth2AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleOAuth2AuthenticationException(
