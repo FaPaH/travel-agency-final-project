@@ -13,6 +13,7 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,7 +29,18 @@ import java.util.List;
 @Slf4j
 public class ApiExceptionHandler {
 
-    //TODO: All exception handling here
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabledException(
+            DisabledException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.LOCKED).body(generateErrorResponse(
+                request.getRequestURI(),
+                HttpStatus.LOCKED,
+                ex.getMessage(),
+                null)
+        );
+    }
 
     @ExceptionHandler(OAuth2AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleOAuth2AuthenticationException(

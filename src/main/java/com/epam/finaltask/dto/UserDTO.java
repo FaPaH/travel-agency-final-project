@@ -17,8 +17,6 @@ public class UserDTO {
 
 	private String username;
 
-	private String password;
-
 	private String role;
 
 	private List<Voucher> vouchers;
@@ -30,7 +28,8 @@ public class UserDTO {
 	@Builder.Default
 	private BigDecimal balance = BigDecimal.ZERO;
 
-	private boolean active;
+	@Builder.Default
+	private boolean active = true;
 
 	private String authProvider;
 

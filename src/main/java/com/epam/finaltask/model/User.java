@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {"role", "vouchers"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -32,6 +31,7 @@ public class User extends BaseEntity implements UserDetails {
     private String username;
 
     @Column(name = "password")
+    @ToString.Exclude
     private String password;
 
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

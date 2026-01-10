@@ -49,7 +49,7 @@ public class ResetServiceImpl implements ResetService {
 
     @Override
     public boolean validateToken(String token) {
-        return resetTokenStorageService.get(token) != null || !resetTokenStorageService.get(token).isExpired();
+        return resetTokenStorageService.get(token) == null && resetTokenStorageService.get(token).isExpired();
     }
 
     @Override

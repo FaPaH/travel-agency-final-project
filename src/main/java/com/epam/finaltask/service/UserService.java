@@ -7,7 +7,7 @@ import com.epam.finaltask.model.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService {
-    UserDTO register(UserDTO userDTO);
+    UserDTO register(UserDTO userDTO, String password);
 
     UserDTO updateUser(String username, UserDTO userDTO);
 
@@ -19,4 +19,6 @@ public interface UserService {
     User getCurrentUser();
 
     UserDTO getUserByEmail(String email);
+
+    void changePassword(UserDTO userDTO, String newPassword);
 }

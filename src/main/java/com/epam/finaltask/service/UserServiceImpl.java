@@ -22,10 +22,9 @@ public class UserServiceImpl implements UserService {
 
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
-	private final PasswordEncoder passwordEncoder;
 
 	@Override
-	public UserDTO register(UserDTO userDTO) {
+	public UserDTO register(UserDTO userDTO, String password) {
 		if (userRepository.existsByUsername(userDTO.getUsername())) {
 			throw new AlreadyInUseException("Username is already registered");
 		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
@@ -33,7 +32,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		User user = userMapper.toUser(userDTO);
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
+		user.setPassword(password);
 
 		return userMapper.toUserDTO(userRepository.save(user));
 	}
@@ -93,6 +92,18 @@ public class UserServiceImpl implements UserService {
 		return userMapper.toUserDTO(userRepository.findUserByEmail(email).orElseThrow(
 				() -> new EntityNotFoundException("User not found")
 		));
+	}
+
+	@Override
+	public void changePassword(UserDTO userDTO, String newPassword) {
+		if (!userRepository.existsByUsername(userDTO.getUsername())) {
+			throw new EntityNotFoundException("User not found");
+		}
+
+		User user = userMapper.toUser(userDTO);
+		user.setPassword(newPassword);
+
+		userMapper.toUserDTO(userRepository.save(user));
 	}
 
 	private User getByUsername(String username) {

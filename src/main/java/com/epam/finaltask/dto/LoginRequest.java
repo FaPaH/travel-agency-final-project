@@ -1,12 +1,7 @@
 package com.epam.finaltask.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
@@ -17,5 +12,6 @@ public class LoginRequest {
     private String username;
 
     @NotBlank(message = "Please provide password")
+    @ToString.Exclude
     private String password;
 }

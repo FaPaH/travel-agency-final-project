@@ -4,6 +4,7 @@ import com.epam.finaltask.dto.*;
 import com.epam.finaltask.exception.InvalidTokenException;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.AuthProvider;
+import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.util.JwtUtil;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,6 +28,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
     private final TokenStorageService<String> JwtTokenStorageService;
+    private final PasswordEncoder passwordEncoder;
+    private final ResetService resetService;
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
@@ -45,14 +49,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponse register(RegisterRequest registerRequest) {
         User user = User.builder()
                 .username(registerRequest.getUsername())
-                .password(registerRequest.getPassword())
                 .email(registerRequest.getEmail())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .role(Role.USER)
                 .authProvider(AuthProvider.LOCAL)
+                .active(true)
                 .build();
 
-        User newUser = userMapper.toUser(userService.register(userMapper.toUserDTO(user)));
+        User newUser = userMapper.toUser(userService.register(userMapper.toUserDTO(user),
+                passwordEncoder.encode(registerRequest.getPassword())));
 
         return generateTokensAndStore(newUser);
     }
@@ -88,6 +93,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         JwtTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
 
         return authResponse;
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
+        if(resetService.validateToken(resetPasswordRequest.getToken())) {
+            throw new InvalidTokenException("Reset token is invalid");
+        }
+
+        ResetToken tokenRecord = resetService.getResetToken(resetPasswordRequest.getToken());
+        UserDTO user = tokenRecord.getUserDTO();
+
+        userService.changePassword(user, passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
+        resetService.removeResetToken(tokenRecord.getToken());
     }
 
     private AuthResponse generateTokens(User user) {

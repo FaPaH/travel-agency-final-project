@@ -2,7 +2,7 @@ package com.epam.finaltask.restcontroller;
 
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.AdminVoucherFilterRequest;
+import com.epam.finaltask.dto.AdminVoucherFilterRequest;
 import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.dto.VoucherFilerRequest;

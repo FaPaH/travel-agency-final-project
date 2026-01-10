@@ -3,7 +3,6 @@ package com.epam.finaltask.dto;
 import com.epam.finaltask.model.HotelType;
 import com.epam.finaltask.model.TourType;
 import com.epam.finaltask.model.TransferType;
-import com.epam.finaltask.model.VoucherStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,6 @@ import java.util.List;
 @Builder
 public class VoucherFilerRequest {
 
-    private List<VoucherStatus> statuses;
     private List<TourType> tours;
     private List<TransferType> transfers;
     private List<HotelType> hotels;

@@ -1,14 +1,13 @@
 package com.epam.finaltask.mapper;
 
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.Voucher;
-import com.epam.finaltask.service.VoucherService;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.springframework.data.domain.Page;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface VoucherMapper {
     Voucher toVoucher(VoucherDTO voucherDTO);
 
