@@ -1,0 +1,50 @@
+.voucher-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.filter {
+    max-width: 20dvw;
+    height: 80dvh;
+}
+
+.voucher-list {
+    min-width: 60dvw;
+    max-width: 60dvw;
+    height: 80dvh;
+}
+
+#filterPanel {
+    max-width: 20dvw;
+    margin-right: 20px;
+}
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+.star-rating input { display: none; }
+.star-rating label { font-size: 2rem; color: #ddd; cursor: pointer; }
+.star-rating label:before { content: '★'; }
+
+/* Подсветка */
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #ffca08;
+}
+
+/* Контейнер тумблера */
+.form-switch .form-check-input {
+    width: 2.5em;
+    height: 1.25em;
+    cursor: pointer;
+}
+
+/* Цвет при включении (например, оранжевый для "горящих") */
+.form-check-input:checked {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}

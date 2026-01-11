@@ -20,7 +20,6 @@ public class VoucherFilerRequest {
     private List<TourType> tours;
     private List<TransferType> transfers;
     private List<HotelType> hotels;
-    private Boolean isHot;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
 }

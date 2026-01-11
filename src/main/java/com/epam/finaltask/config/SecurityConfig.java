@@ -60,7 +60,8 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/auth/reset-password", "/reset-password/confirm").authenticated()
+                        .requestMatchers("/","/index", "/css/**", "/js/**", "/vouchers", "/auth/sign-in", "/auth/sign-up").permitAll()
+                        .requestMatchers("/api/auth/reset-password").authenticated()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

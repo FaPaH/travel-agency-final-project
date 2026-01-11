@@ -1,0 +1,85 @@
+<form th:fragment="filter-fragment"
+      hx-get="/vouchers"
+      hx-target="#voucher-list"
+      hx-trigger="change, keyup delay:500ms form:input">
+
+    <button class="btn btn-outline-primary mb-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#filterPanel"
+            aria-expanded="false">
+        Фильтры и категории ↓
+    </button>
+
+    <div class="collapse" id="filterPanel">
+        <div class="card card-body shadow-sm mb-3">
+            <div class="column">
+
+                <div class="col-md-6">
+                    <label class="fw-bold mb-2">Ценовой диапазон:</label>
+                    <div class="d-flex gap-2">
+                        <input type="number" name="minPrice" class="form-control form-control-sm" placeholder="От">
+                        <input type="number" name="maxPrice" class="form-control form-control-sm" placeholder="До">
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="fw-bold mb-2">Tour type:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <th:block th:each="tour : ${T(com.epam.finaltask.model.TourType).values()}">
+                            <div class="filter-chip">
+                                <input type="checkbox"
+                                       class="btn-check"
+                                       name="tours"
+                                       th:id="${'tour-' + tour}"
+                                       th:value="${tour}">
+                                <label class="btn btn-sm btn-outline-secondary"
+                                       th:for="${'tour-' + tour}"
+                                       th:text="${tour}"></label>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="fw-bold mb-2">Transfer type:</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <th:block th:each="transfer : ${T(com.epam.finaltask.model.TransferType).values()}">
+                            <div class="filter-chip">
+                                <input type="checkbox"
+                                       class="btn-check"
+                                       name="transfers"
+                                       th:id="${'transfer-' + transfer}"
+                                       th:value="${transfer}">
+                                <label class="btn btn-sm btn-outline-secondary"
+                                       th:for="${'transfer-' + transfer}"
+                                       th:text="${transfer}"></label>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="fw-bold mb-2">Hotel rating:</label>
+                        <div class="star-rating col-md-6">
+                            <th:block th:each="type : ${T(com.epam.finaltask.model.HotelType).values()}">
+                                <input type="radio"
+                                       th:id="${'star-' + type}"
+                                       name="hotels"
+                                       th:value="${type}" />
+                                <label th:for="${'star-' + type}"></label>
+                            </th:block>
+                        </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-link text-decoration-none"
+                            onclick="document.querySelectorAll('input[name=\'hotels\']').forEach(i => i.checked = false);
+                     this.closest('form').dispatchEvent(new Event('change'));">
+                        ✕ reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

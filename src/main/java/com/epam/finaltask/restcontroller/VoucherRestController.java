@@ -3,7 +3,7 @@ package com.epam.finaltask.restcontroller;
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.dto.AdminVoucherFilterRequest;
-import com.epam.finaltask.model.PaginatedResponse;
+import com.epam.finaltask.dto.PaginatedResponse;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.service.VoucherService;
@@ -79,7 +79,7 @@ public class VoucherRestController {
 
     @PatchMapping("order/{voucherId}")
     @PreAuthorize("hasAnyRole('USER', 'MANAGER', 'ADMIN')")
-    public ResponseEntity<PaginatedResponse<VoucherDTO>> orderVoucher(@AuthenticationPrincipal User user,
+    public ResponseEntity<VoucherDTO> orderVoucher(@AuthenticationPrincipal User user,
                                                                       @PathVariable String voucherId) {
         voucherService.order(voucherId, user.getId().toString());
 

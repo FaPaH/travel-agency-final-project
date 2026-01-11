@@ -1,4 +1,4 @@
-package com.epam.finaltask.model;
+package com.epam.finaltask.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

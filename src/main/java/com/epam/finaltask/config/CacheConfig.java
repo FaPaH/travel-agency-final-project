@@ -1,8 +1,6 @@
 package com.epam.finaltask.config;
 
-import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.model.CacheType;
-import com.epam.finaltask.model.PaginatedResponse;
 import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.model.VoucherPaginatedResponse;
 import com.epam.finaltask.service.AbstractTokenStorage;

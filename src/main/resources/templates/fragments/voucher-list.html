@@ -1,0 +1,25 @@
+<div th:fragment="voucher-list-fragment" id="voucher-list">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th scope="col">#ID</th>
+            <th scope="col">Voucher Title</th>
+            <th scope="col">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr th:each="voucher : ${vouchers.getData()}">
+            <td th:text="${voucher.id}"></td>
+            <td th:text="${voucher.title}"></td>
+            <td th:text="${voucher.description}"></td>
+            <td><a th:href="@{/vouchers/order}" class="btn btn-outline-success me-2" type="button">Order</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(vouchers.getData())}">
+            <td colspan="3">There is no vouchers</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers})}"></div>
+</div>

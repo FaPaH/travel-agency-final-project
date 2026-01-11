@@ -55,16 +55,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-
-                if (requestPath.contains("/api/auth") ||
-                        requestPath.contains("/swagger-ui") ||
-                        requestPath.contains("/v3/api-docs")) {
-
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-
-                throw new InvalidTokenException("JWT Authentication Filter Skipped");
+                filterChain.doFilter(request, response);
+                return;
             }
 
             jwt = authHeader.substring(BEARER_PREFIX.length());

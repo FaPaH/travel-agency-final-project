@@ -19,15 +19,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    //TODO: rest Voucher controller/service,
-    // exception handling for rest,
-    // logging
-
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final UserMapper userMapper;
-    private final TokenStorageService<String> JwtTokenStorageService;
+    private final TokenStorageService<String> jwtTokenStorageService;
     private final PasswordEncoder passwordEncoder;
     private final ResetService resetService;
 
@@ -64,7 +60,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthResponse refresh(RefreshTokenRequest refreshRequest) {
-        if (JwtTokenStorageService.get(jwtUtil.extractUsername(refreshRequest.getRefreshToken())) == null
+        if (jwtTokenStorageService.get(jwtUtil.extractUsername(refreshRequest.getRefreshToken())) == null
                 || jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
             throw new InvalidTokenException("Token has expired, please login again");
         }
@@ -79,7 +75,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String id = jwtUtil.extractAllClaims(logoutRequest.getRefreshToken()).get("id", String.class);
 
         if (id != null) {
-            JwtTokenStorageService.revoke(id);
+            jwtTokenStorageService.revoke(id);
         }
 
         SecurityContextHolder.clearContext();
@@ -89,8 +85,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponse generateTokensAndStore(User user) {
         AuthResponse authResponse = generateTokens(user);
 
-        JwtTokenStorageService.revoke(user.getId().toString());
-        JwtTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
+        jwtTokenStorageService.revoke(user.getId().toString());
+        jwtTokenStorageService.store(user.getId().toString(), authResponse.getRefreshToken());
 
         return authResponse;
     }
@@ -106,6 +102,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         userService.changePassword(user, passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
         resetService.removeResetToken(tokenRecord.getToken());
+        jwtTokenStorageService.revoke(user.getId());
     }
 
     private AuthResponse generateTokens(User user) {
