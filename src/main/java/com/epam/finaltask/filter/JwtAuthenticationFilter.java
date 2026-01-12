@@ -6,6 +6,7 @@ import com.epam.finaltask.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -47,19 +49,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         log.info("Starting JWT Authentication Filter");
 
-        String requestPath = request.getServletPath();
         final String authHeader = request.getHeader(HEADER_NAME);
-        final String jwt;
+        String jwt = null;
         final String username;
 
         try {
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                jwt = authHeader.substring(BEARER_PREFIX.length());
+            }
+
+            if (jwt == null && request.getCookies() != null) {
+                jwt = Arrays.stream(request.getCookies())
+                        .filter(c -> "jwt_access".equals(c.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
+
+            if (jwt == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            jwt = authHeader.substring(BEARER_PREFIX.length());
             username = jwtUtil.extractUsername(jwt);
 
             if (!StringUtils.isEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -82,10 +94,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     context.setAuthentication(authToken);
                     SecurityContextHolder.setContext(context);
                 } else {
-                    throw new InvalidTokenException("JWT Authentication Filter Skipped");
+                    throw new InvalidTokenException("Invalid token");
                 }
             } else {
-                throw new InvalidTokenException("JWT Authentication Filter Skipped");
+                throw new InvalidTokenException("Invalid token");
             }
 
             log.info("JWT Authentication Filter Success for username {}", username);

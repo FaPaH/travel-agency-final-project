@@ -12,16 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/")
 public class GlobalController {
 
-    @GetMapping
+    @GetMapping("index")
     public String index(Model model) {
 
         return "index";
     }
 
-    @GetMapping("auth/sign-in")
-    public String signIn(Model model) {
-        model.addAttribute("loginRequest", new LoginRequest());
+    @GetMapping
+    public String index2(Model model) {
 
-        return "auth/sign-in";
+        return "index";
     }
 }

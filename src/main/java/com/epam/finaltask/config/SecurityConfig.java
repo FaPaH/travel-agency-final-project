@@ -4,8 +4,10 @@ import com.epam.finaltask.filter.JwtAuthenticationFilter;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.*;
+import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.JwtUtil;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserMapper userMapper;
     private final TokenStorageService<String> refreshTokenStorageService;
+    private final JwtProperties jwtProperties;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -59,14 +62,23 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/","/index", "/css/**", "/js/**", "/vouchers", "/auth/sign-in", "/auth/sign-up").permitAll()
-                        .requestMatchers("/api/auth/reset-password").authenticated()
+                        .requestMatchers("/api/auth/**", "/auth/**", "/error").permitAll()
+                        .requestMatchers("/favicon.ico","/","/index", "/css/**", "/js/**", "/vouchers").permitAll()
+                        .requestMatchers("/api/auth/reset-password", "/auth/reset-password").authenticated()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin(form -> form
+                        .loginPage("/auth/sign-in")
+                        .defaultSuccessUrl("/index", true)
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/auth/login?logout")
+                        .deleteCookies("JSESSIONID", "jwt_access", "jwt_refresh")
+                        .invalidateHttpSession(true))
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService)
@@ -81,12 +93,16 @@ public class SecurityConfig {
     AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
         return new AuthenticationSuccessHandler() {
             @Override
-            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+            public void onAuthenticationSuccess(HttpServletRequest request,
+                                                HttpServletResponse response,
+                                                Authentication authentication)
+                    throws IOException, ServletException {
                 OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
                 String email = oAuth2User.getAttribute("email");
                 String username = oAuth2User.getAttribute("login");
                 User user;
+                boolean isRest = checkIfRest(request);
 
                 if (email != null) {
                     user = userMapper.toUser(userService.getUserByEmail(email));
@@ -100,12 +116,18 @@ public class SecurityConfig {
                 refreshTokenStorageService.revoke(user.getId().toString());
                 refreshTokenStorageService.store(user.getId().toString(), refreshToken);
 
-                String targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
-                        .queryParam("accessToken", accessToken)
-                        .queryParam("refreshToken", refreshToken)
-                        .build().toUriString();
+                if (isRest) {
+                    String targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
+                            .queryParam("accessToken", accessToken)
+                            .queryParam("refreshToken", refreshToken)
+                            .build().toUriString();
 
-                response.sendRedirect(targetUrl);
+                    response.sendRedirect(targetUrl);
+                } else {
+                    saveTokensToCookies(response, accessToken, refreshToken);
+
+                    response.sendRedirect("/");
+                }
             }
         };
     }
@@ -122,5 +144,25 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    private boolean checkIfRest(HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+        return referer != null && referer.contains("localhost:8080"); // Например, ваш React/Vue фронтенд
+    }
+
+    private void saveTokensToCookies(HttpServletResponse response, String access, String refresh) {
+        Cookie aCookie = new Cookie("jwt_access", access);
+        aCookie.setHttpOnly(true);
+        aCookie.setPath("/");
+        aCookie.setMaxAge((int) jwtProperties.getExpiration());
+
+        Cookie rCookie = new Cookie("jwt_refresh", refresh);
+        rCookie.setHttpOnly(true);
+        rCookie.setPath("/auth/refresh");
+        rCookie.setMaxAge((int) jwtProperties.getRefreshToken().getExpiration());
+
+        response.addCookie(aCookie);
+        response.addCookie(rCookie);
     }
 }
