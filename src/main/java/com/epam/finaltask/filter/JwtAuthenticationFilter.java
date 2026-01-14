@@ -1,6 +1,8 @@
 package com.epam.finaltask.filter;
 
 import com.epam.finaltask.exception.InvalidTokenException;
+import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @Qualifier("handlerExceptionResolver")
     private final HandlerExceptionResolver resolver;
@@ -59,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 jwt = authHeader.substring(BEARER_PREFIX.length());
             }
 
-            if (jwt == null && request.getCookies() != null) {
+            if (request.getCookies() != null) {
                 jwt = Arrays.stream(request.getCookies())
                         .filter(c -> "jwt_access".equals(c.getName()))
                         .map(Cookie::getValue)
@@ -75,19 +78,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             username = jwtUtil.extractUsername(jwt);
 
             if (!StringUtils.isEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userService
-                        .userDetailsService()
-                        .loadUserByUsername(username);
+                User user = userMapper.toUser(userService.getUserByUsername(username));
 
-                log.info("Logged in user: {}", userDetails);
 
-                if (jwtUtil.isTokenValid(jwt, userDetails)) {
+                log.info("Logged in user: {}", user);
+
+                if (jwtUtil.isTokenValid(jwt, user)) {
                     SecurityContext context = SecurityContextHolder.getContext();
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
+                            user,
                             null,
-                            userDetails.getAuthorities()
+                            user.getAuthorities()
                     );
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

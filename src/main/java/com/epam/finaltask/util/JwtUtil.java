@@ -22,13 +22,13 @@ public class JwtUtil {
 
     private final JwtProperties jwtProperties;
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User customUserDetails) {
             claims.put("id", customUserDetails.getId());
             claims.put("username", customUserDetails.getUsername());
             claims.put("role", customUserDetails.getRole());
-            claims.put("isLogout", false);
+            claims.put("type", "access");
         }
         return generateToken(claims, userDetails);
     }

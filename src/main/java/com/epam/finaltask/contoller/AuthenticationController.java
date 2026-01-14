@@ -1,8 +1,10 @@
 package com.epam.finaltask.contoller;
 
 import com.epam.finaltask.dto.*;
+import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.AuthenticationService;
 import com.epam.finaltask.service.ResetService;
+import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,18 +28,17 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final ResetService resetService;
     private final JwtProperties jwtProperties;
+    private final UserService userService;
 
     @GetMapping("/sign-in")
-    public String signIn(Model model) {
-        model.addAttribute("loginRequest", new LoginRequest());
-
+    public String signIn(@ModelAttribute("loginRequest") LoginRequest loginRequest,
+                         Model model) {
         return "auth/sign-in";
     }
 
     @GetMapping("/sign-up")
-    public String signUp(Model model) {
-        model.addAttribute("registerRequest", new RegisterRequest());
-
+    public String signUp(@ModelAttribute("registerRequest") RegisterRequest registerRequest,
+                         Model model) {
         return "auth/sign-up";
     }
 
@@ -65,12 +67,6 @@ public class AuthenticationController {
         return ResponseEntity.ok().body(authenticationService.refresh(refreshTokenRequest));
     }
 
-    @PostMapping("/sign-out")
-    public ResponseEntity<Void> logout(@RequestBody @Valid LogoutRequest logoutRequest) {
-        authenticationService.logout(logoutRequest);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/oauth2/success")
     public ResponseEntity<AuthResponse> oauth2Success(
             @RequestParam("accessToken") String accessToken,
@@ -84,27 +80,66 @@ public class AuthenticationController {
         );
     }
 
-    @PostMapping("/reset-password")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> requestReset(@RequestBody @Valid ResetRequest request) {
-        resetService.proceedReset(request.getEmail());
-        return ResponseEntity.ok("If the email is registered, you'll get a reset link");
-    }
+    @GetMapping("/reset-password-form")
+    @PreAuthorize("isAuthenticated()")
+    public String getResetForm(@AuthenticationPrincipal User user,
+                               Model model) {
 
-    @GetMapping("/reset-password")
-    public ResponseEntity<String> validateToken(@RequestParam("token") String token) {
-        if(resetService.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
+        ResetRequest resetRequest = new ResetRequest();
+
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            resetRequest.setEmail(user.getEmail());
+            model.addAttribute("hasEmail", true);
+        } else {
+            model.addAttribute("hasEmail", false);
         }
 
-        return ResponseEntity.ok("Token is valid");
+        model.addAttribute("resetRequest", resetRequest);
+        return "fragments/reset-password :: reset-password-fragment";
+    }
+
+    @PostMapping("/reset-password")
+    @PreAuthorize("isAuthenticated()")
+    public String requestReset(@AuthenticationPrincipal User user,
+                               @ModelAttribute("resetRequest") @Valid ResetRequest resetRequest,
+                               Model model) {
+
+        userService.updateUser(user.getUsername(), UserDTO.builder()
+                .email(resetRequest.getEmail())
+                .build());
+        resetService.proceedReset(resetRequest.getEmail(), false);
+
+        model.addAttribute("success", true);
+        model.addAttribute("message", "Инструкции по сбросу пароля отправлены на почту: " + resetRequest.getEmail());
+
+        return "fragments/reset-password :: reset-password-fragment";
+    }
+
+    @GetMapping("/reset-password/validate")
+    @PreAuthorize("isAuthenticated()")
+    public String showResetForm(@RequestParam("token") String token, Model model) {
+
+        if(!resetService.validateToken(token)) {
+            model.addAttribute("error", "The reset link is invalid or has expired.");
+            return "auth/reset-password";
+        }
+
+        model.addAttribute("token", token);
+        model.addAttribute("validToken", true);
+        return "auth/reset-password";
     }
 
     @PostMapping("/reset-password/confirm")
-    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
-        authenticationService.resetPassword(request);
+    public String confirmReset(@ModelAttribute @Valid ResetPasswordRequest request, HttpServletResponse response) {
 
-        return ResponseEntity.ok("Password updated");
+        if(!resetService.validateToken(request.getToken())) {
+            return "redirect:/auth/sign-in?error=invalid_token";
+        }
+
+        authenticationService.resetPassword(request);
+        resetCookies(response);
+
+        return "redirect:/auth/sign-in?resetSuccess=true";
     }
 
     private void saveTokensToCookies(HttpServletResponse response, String access, String refresh) {
@@ -117,6 +152,19 @@ public class AuthenticationController {
         rCookie.setHttpOnly(true);
         rCookie.setPath("/auth/refresh");
         rCookie.setMaxAge((int) jwtProperties.getRefreshToken().getExpiration());
+
+        response.addCookie(aCookie);
+        response.addCookie(rCookie);
+    }
+
+    private void resetCookies(HttpServletResponse response) {
+        Cookie aCookie = new Cookie("jwt_access", null);
+        aCookie.setPath("/");
+        aCookie.setMaxAge(0);
+
+        Cookie rCookie = new Cookie("jwt_refresh", null);
+        rCookie.setPath("/");
+        rCookie.setMaxAge(0);
 
         response.addCookie(aCookie);
         response.addCookie(rCookie);

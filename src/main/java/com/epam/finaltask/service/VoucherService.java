@@ -1,5 +1,6 @@
 package com.epam.finaltask.service;
 
+import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
 import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
@@ -12,7 +13,7 @@ public interface VoucherService {
     VoucherDTO update(String id, VoucherDTO voucherDTO);
     void delete(String voucherId);
     VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest);;
-    VoucherPaginatedResponse findAllByUserId(String userId, Pageable pageable);
+    VoucherPaginatedResponse findAllByUserId(PersonalVoucherFilterRequest filterRequest, Pageable pageable);
 
     VoucherPaginatedResponse findWithFilers(VoucherFilerRequest voucherFilerRequest, Pageable pageable);
 }

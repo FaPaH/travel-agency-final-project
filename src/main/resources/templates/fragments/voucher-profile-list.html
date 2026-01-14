@@ -1,10 +1,11 @@
-<div th:fragment="voucher-list-fragment" id="voucher-list">
+<div th:fragment="voucher-profile-list-fragment" id="voucher-list">
     <table class="table table-bordered">
         <thead>
         <tr>
             <th scope="col">#ID</th>
             <th scope="col">Voucher Title</th>
             <th scope="col">Description</th>
+            <th scope="col">Status</th>
         </tr>
         </thead>
         <tbody>
@@ -13,7 +14,7 @@
             <td th:text="${voucher.id}"></td>
             <td th:text="${voucher.title}"></td>
             <td th:text="${voucher.description}"></td>
-            <td sec:authorize="isAuthenticated()"><a th:href="@{/vouchers/order}" class="btn btn-outline-success me-2" type="button">Order</a></td>
+            <td th:text="${voucher.status}"></td>
         </tr>
         <tr th:if="${#lists.isEmpty(vouchers.getData())}">
             <td colspan="3">There is no vouchers</td>
@@ -21,5 +22,5 @@
         </tbody>
     </table>
 
-    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/vouchers')}"></div>
+    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/vouchers/user')}"></div>
 </div>

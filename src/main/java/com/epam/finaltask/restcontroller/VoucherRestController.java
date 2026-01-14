@@ -2,7 +2,7 @@ package com.epam.finaltask.restcontroller;
 
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.dto.AdminVoucherFilterRequest;
+import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
 import com.epam.finaltask.dto.PaginatedResponse;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.dto.VoucherFilerRequest;
@@ -33,7 +33,7 @@ public class VoucherRestController {
 
     @GetMapping("/admin")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<PaginatedResponse<VoucherDTO>> getAdminFilteredVouchers(AdminVoucherFilterRequest adminFiler,
+    public ResponseEntity<PaginatedResponse<VoucherDTO>> getAdminFilteredVouchers(PersonalVoucherFilterRequest adminFiler,
                                                                                   @PageableDefault(size = 20, page = 0) Pageable pageable) {
         return ResponseEntity.ok().body(voucherService.findWithFilers(adminFiler, pageable));
     }
@@ -43,7 +43,9 @@ public class VoucherRestController {
     public ResponseEntity<PaginatedResponse<VoucherDTO>> adminFindAllByUserId(@PathVariable String userId,
                                                                               @PageableDefault(size = 20, page = 0) Pageable pageable) {
 
-        return ResponseEntity.ok().body(voucherService.findAllByUserId(userId, pageable));
+        //voucherService.findAllByUserId(userId, pageable)
+
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/admin/create")

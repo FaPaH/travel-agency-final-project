@@ -6,6 +6,7 @@ import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.*;
 import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,10 +29,13 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -62,9 +66,9 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/**", "/auth/**", "/error").permitAll()
+                        .requestMatchers("/api/auth/**", "/auth/**", "error/error").permitAll()
                         .requestMatchers("/favicon.ico","/","/index", "/css/**", "/js/**", "/vouchers").permitAll()
-                        .requestMatchers("/api/auth/reset-password", "/auth/reset-password").authenticated()
+                        .requestMatchers("/api/auth/reset-password", "/auth/reset-password", "/user/dashboard", "user/profile/**").authenticated()
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -76,7 +80,8 @@ public class SecurityConfig {
                         .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
-                        .logoutSuccessUrl("/auth/login?logout")
+                        .addLogoutHandler(logoutHandler())
+                        .logoutSuccessHandler(logoutSuccessHandler())
                         .deleteCookies("JSESSIONID", "jwt_access", "jwt_refresh")
                         .invalidateHttpSession(true))
                 .oauth2Login(oauth2 -> oauth2
@@ -87,6 +92,46 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Bean
+    LogoutHandler logoutHandler() {
+        return new LogoutHandler() {
+
+            @Override
+            public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+                String token = null;
+
+                if (request.getCookies() != null) {
+                    token = Arrays.stream(request.getCookies())
+                            .filter(c -> "jwt_access".equals(c.getName()))
+                            .map(Cookie::getValue)
+                            .findFirst()
+                            .orElse(null);
+                }
+
+                if (token != null) {
+                    refreshTokenStorageService.revoke(jwtUtil.extractClaim(token, claims -> claims.get("id", String.class)));
+                }
+            }
+        };
+    }
+
+    @Bean
+    LogoutSuccessHandler logoutSuccessHandler() {
+        return new LogoutSuccessHandler() {
+
+            @Override
+            public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With")) ||
+                        request.getHeader("HX-Request") != null) {
+
+                    response.setHeader("HX-Redirect", "/auth/sign-in?logout");
+                } else {
+                    response.sendRedirect("/auth/sign-in?logout");
+                }
+            }
+        };
     }
 
     @Bean
@@ -110,7 +155,7 @@ public class SecurityConfig {
                     user = userMapper.toUser(userService.getUserByUsername(username));
                 }
 
-                String accessToken = jwtUtil.generateToken(user);
+                String accessToken = jwtUtil.generateAccessToken(user);
                 String refreshToken = jwtUtil.generateRefreshToken(user);
 
                 refreshTokenStorageService.revoke(user.getId().toString());

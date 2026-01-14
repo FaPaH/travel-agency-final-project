@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -34,9 +36,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 loginRequest.getPassword()
         ));
 
-        User user = (User) userService
-                .userDetailsService()
-                .loadUserByUsername(loginRequest.getUsername());
+        User user = userMapper.toUser(userService.getUserByUsername(loginRequest.getUsername()));
 
         return generateTokensAndStore(user);
     }
@@ -52,7 +52,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .active(true)
                 .build();
 
-        User newUser = userMapper.toUser(userService.register(userMapper.toUserDTO(user),
+        User newUser = userMapper.toUser(userService.saveUser(userMapper.toUserDTO(user),
                 passwordEncoder.encode(registerRequest.getPassword())));
 
         return generateTokensAndStore(newUser);
@@ -65,7 +65,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new InvalidTokenException("Token has expired, please login again");
         }
 
-        User user = userMapper.toUser(userService.getUserByUsername(jwtUtil.extractUsername(refreshRequest.getRefreshToken())));
+        User user = userMapper.toUser(
+                userService.getUserById(
+                        UUID.fromString(
+                            jwtUtil.extractClaim(
+                                    refreshRequest.getRefreshToken(),
+                                    claims -> claims.get("id", String.class)
+                            )
+                        )
+                )
+        );
 
         return generateTokensAndStore(user);
     }
@@ -93,9 +102,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void resetPassword(ResetPasswordRequest resetPasswordRequest) {
-        if(resetService.validateToken(resetPasswordRequest.getToken())) {
-            throw new InvalidTokenException("Reset token is invalid");
-        }
 
         ResetToken tokenRecord = resetService.getResetToken(resetPasswordRequest.getToken());
         UserDTO user = tokenRecord.getUserDTO();
@@ -106,7 +112,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private AuthResponse generateTokens(User user) {
-        String jwtToken = jwtUtil.generateToken(user);
+        String jwtToken = jwtUtil.generateAccessToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
         return AuthResponse.builder()

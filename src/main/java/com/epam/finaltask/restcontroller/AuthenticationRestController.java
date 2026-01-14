@@ -55,13 +55,13 @@ public class AuthenticationRestController {
     @PostMapping("/reset-password")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> requestReset(@RequestBody @Valid ResetRequest request) {
-        resetService.proceedReset(request.getEmail());
+        resetService.proceedReset(request.getEmail(), true);
         return ResponseEntity.ok("If the email is registered, you'll get a reset link");
     }
 
     @GetMapping("/reset-password")
     public ResponseEntity<String> validateToken(@RequestParam("token") String token) {
-        if(resetService.validateToken(token)) {
+        if(!resetService.validateToken(token)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
         }
 

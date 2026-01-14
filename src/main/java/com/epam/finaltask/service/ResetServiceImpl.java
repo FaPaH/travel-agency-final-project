@@ -20,16 +20,13 @@ public class ResetServiceImpl implements ResetService {
     private final TokenStorageService<ResetToken> resetTokenStorageService;
     private final MailService mailService;
 
-    private final static String RESET_URL = "http://localhost:8080/api/auth/reset-password?token=";
+    private final static String RESET_API_URL = "http://localhost:8080/api/auth/reset-password/validate?token=";
+    private final static String RESET_URL = "http://localhost:8080/auth/reset-password/validate?token=";
     private final static String RESET_BODY = "Click the link below to reset your password.\n";
 
     @Override
-    public void proceedReset(String email) {
+    public void proceedReset(String email, boolean isApi) {
         UserDTO userDTO = userService.getUserByEmail(email);
-
-        if (userDTO == null) {
-            throw new EntityNotFoundException("User with email not found");
-        }
 
         String token = resetTokenUtil.generateResetToken();
 
@@ -41,7 +38,14 @@ public class ResetServiceImpl implements ResetService {
 
         resetTokenStorageService.store(token, resetToken);
 
-        String resetUrl = RESET_URL + token;
+        String resetUrl;
+
+        if (isApi) {
+            resetUrl = RESET_API_URL + token;
+        } else {
+            resetUrl = RESET_URL + token;
+        }
+
         String body = RESET_BODY + resetUrl;
 
         mailService.sendTextMail(userDTO.getEmail(), resetToken.getToken(), body);
@@ -49,7 +53,7 @@ public class ResetServiceImpl implements ResetService {
 
     @Override
     public boolean validateToken(String token) {
-        return resetTokenStorageService.get(token) == null && resetTokenStorageService.get(token).isExpired();
+        return resetTokenStorageService.get(token) != null && !resetTokenStorageService.get(token).isExpired();
     }
 
     @Override

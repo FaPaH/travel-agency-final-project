@@ -1,5 +1,6 @@
 package com.epam.finaltask.config;
 
+import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.model.CacheType;
 import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.model.VoucherPaginatedResponse;
@@ -20,8 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.epam.finaltask.model.CacheType.CacheNames.REFRESH_TOKENS;
-import static com.epam.finaltask.model.CacheType.CacheNames.RESET_TOKENS;
+import static com.epam.finaltask.model.CacheType.CacheNames.*;
 
 @Configuration
 @EnableCaching
@@ -43,6 +43,11 @@ public class CacheConfig {
     @Bean
     public TokenStorageService<VoucherPaginatedResponse> voucherPagesStorage() {
         return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, VoucherPaginatedResponse.class) {};
+    }
+
+    @Bean
+    public TokenStorageService<UserDTO> userProfilesStorage() {
+        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, UserDTO.class) {};
     }
 
     @Bean
@@ -72,8 +77,6 @@ public class CacheConfig {
         if (type == CacheType.REFRESH_TOKENS) {
             return Duration.ofSeconds(jwtProperties.getRefreshToken().getExpiration());
         } else if (type == CacheType.RESET_TOKENS) {
-            return Duration.ofSeconds(jwtProperties.getExpiration());
-        } else if (type == CacheType.VOUCHER_PAGES) {
             return Duration.ofSeconds(jwtProperties.getExpiration());
         }
         return type.getTtl();

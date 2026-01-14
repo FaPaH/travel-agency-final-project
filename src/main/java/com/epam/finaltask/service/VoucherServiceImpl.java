@@ -1,5 +1,6 @@
 package com.epam.finaltask.service;
 
+import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
 import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.dto.VoucherStatusRequest;
 import com.epam.finaltask.dto.VoucherDTO;
@@ -119,33 +120,39 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public VoucherPaginatedResponse findAllByUserId(String userId, Pageable pageable) {
+    public VoucherPaginatedResponse findAllByUserId(PersonalVoucherFilterRequest filterRequest, Pageable pageable) {
+
+        boolean isDefaultRequest = isFilterEmpty(filterRequest);
 
         String cacheKey = String.format("user_vouchers_id%s_p%d",
-                userId ,pageable.getPageNumber());
+                filterRequest.getUserId() ,pageable.getPageNumber());
 
-        VoucherPaginatedResponse cached = voucherPageStorage.get(cacheKey);
-
-        if (cached != null) {
-            return cached;
+        if (isDefaultRequest) {
+            VoucherPaginatedResponse cached = voucherPageStorage.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
         }
 
-        Page<VoucherDTO> dtoPage = voucherRepository.findAllByUserId(UUID.fromString(userId), pageable).map(voucherMapper::toVoucherDTO);
+        Specification<Voucher> spec = VoucherSpecifications.withFilters(filterRequest);
+
+        Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
         VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage);
 
-        voucherPageStorage.store(cacheKey, paginatedResponse);
+        if (isDefaultRequest) {
+            voucherPageStorage.store(cacheKey, paginatedResponse);
+        }
 
         return paginatedResponse;
     }
-
     @Override
     public VoucherPaginatedResponse findWithFilers(VoucherFilerRequest voucherFilerRequest, Pageable pageable) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("MANAGER"));
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+//                .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("MANAGER"));
 
-        boolean isDefaultRequest = !isAdmin && isFilterEmpty(voucherFilerRequest);
+        boolean isDefaultRequest = isFilterEmpty(voucherFilerRequest);
 
         String cacheKey = String.format("vouchers_p%d_s%d",
                 pageable.getPageNumber(), pageable.getPageSize());
@@ -170,10 +177,17 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     private boolean isFilterEmpty(VoucherFilerRequest filter) {
+        boolean isEmpty = true;
+
+        if (filter instanceof PersonalVoucherFilterRequest personalFilter) {
+            isEmpty = personalFilter.getStatuses() == null;
+        }
+
         return filter.getTours() == null &&
                 filter.getMinPrice() == null &&
                 filter.getMaxPrice() == null &&
                 filter.getHotels() == null &&
-                filter.getTransfers() == null;
+                filter.getTransfers() == null &&
+                isEmpty;
     }
 }

@@ -16,6 +16,10 @@ public class RegisterRequest {
     @ToString.Exclude
     private String password;
 
+    private String firstName;
+
+    private String lastName;
+
     @Pattern(regexp = "^$|^[+]{1}(?:[0-9\\-\\(\\)\\/\\.]\\s?){6,15}[0-9]{1}$",
             message = "Invalid phone format")
     private String phoneNumber;

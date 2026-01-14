@@ -1,8 +1,8 @@
-<tr th:fragment="pagination-fragment(v)">
+<tr th:fragment="pagination-fragment(v, baseUrl)">
     <td colspan="3">
         <div class="pagination">
             <button th:if="${v.currentPage > 0}"
-                    th:attr="hx-get=@{/vouchers(page=${v.currentPage - 1})}"
+                    th:attr="hx-get=@{|${baseUrl}|(page=${v.currentPage - 1})}"
                     hx-include="form"
                     hx-target="#voucher-list">
                 ← Back
@@ -12,7 +12,7 @@
                     th:each="i : ${#numbers.sequence(1, v.totalPages)}">
                 <a th:if="${v.currentPage != i - 1}"
                    style="cursor: pointer; margin: 0 5px; text-decoration: underline;"
-                   th:attr="hx-get=@{/vouchers(page=${i - 1})}"
+                   th:attr="hx-get=@{|${baseUrl}|(page=${i - 1})}"
                    th:text="${i}"
                    hx-include="form"
                    hx-target="#voucher-list"></a>
@@ -24,7 +24,7 @@
             </span>
 
             <button th:if="${v.currentPage + 1 < v.totalPages}"
-                    th:attr="hx-get=@{/vouchers(page=${v.currentPage + 1})}"
+                    th:attr="hx-get=@{|${baseUrl}|(page=${v.currentPage + 1})}"
                     hx-include="form"
                     hx-target="#voucher-list">
                 Next →

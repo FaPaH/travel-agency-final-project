@@ -1,0 +1,70 @@
+<div th:fragment="user-info-fragment" id="profile-container">
+    <h4>Мой профиль</h4>
+    <div class="card p-3" id="profile-details">
+        <p><strong>ID:</strong> <span th:text="${user.id}">1</span></p>
+        <p><strong>Username:</strong> <span th:text="${user.username}">admin</span></p>
+        <p><strong>First Name:</strong> <span th:text="${user.firstName ?: 'Не указан'}">1</span></p>
+        <p><strong>Last Name:</strong> <span th:text="${user.lastName ?: 'Не указан'}">admin</span></p>
+        <p><strong>Phone Number:</strong> <span th:text="${user.phoneNumber ?: 'Не указан'}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email ?: 'Не указан'}"></span></p>
+
+        <button class="btn btn-sm btn-outline-primary"
+                hx-get="/user/profile/edit"
+                hx-target="#profile-details">
+            Edit Profile
+        </button>
+    </div>
+</div>
+
+<form th:fragment="profile-edit-fragment"
+      hx-post="/user/profile/update"
+      hx-target="#profile-details">
+
+    <input type="hidden" name="id" th:value="${user.id}">
+
+    <div class="form-group">
+        <label>First Name</label>
+        <input type="text" name="firstName" class="form-control" th:value="${user.firstName}">
+    </div>
+    <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" name="lastName" class="form-control" th:value="${user.lastName}">
+    </div>
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" th:value="${user.email}">
+    </div>
+    <div class="form-group">
+        <label>Phone</label>
+        <input type="text" name="phoneNumber" class="form-control" th:value="${user.phoneNumber}">
+    </div>
+
+    <button type="submit" class="btn btn-success btn-sm">Update</button>
+    <button type="button" class="btn btn-secondary btn-sm"
+            hx-get="/user/profile"
+            hx-target="#profile-container"
+            hx-select="#profile-details">
+        Cancel
+    </button>
+</form>
+
+<div th:fragment="profile-balance-fragment" id="profile-balance-wrapper">
+    <div class="card p-3" id="profile-balance-details">
+        <p><strong>Current Balance:</strong> <span th:text="${user.balance}">0.00</span></p>
+    </div>
+
+    <div id="top-up-container">
+        <form hx-post="/user/profile/balance/top-up" hx-target="#profile-balance-wrapper">
+            <div class="form-group">
+                <label for="amount">Сумма пополнения</label>
+                <input type="number"
+                       id="amount"
+                       name="amount"
+                       class="form-control"
+                       placeholder="Введите сумму">
+            </div>
+            <button type="submit" class="btn btn-primary">Пополнить</button>
+        </form>
+    </div>
+</div>
+

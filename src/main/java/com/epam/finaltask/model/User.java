@@ -34,6 +34,12 @@ public class User extends BaseEntity implements UserDetails {
     @ToString.Exclude
     private String password;
 
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", columnDefinition = "user_role_type")
