@@ -26,6 +26,7 @@ public class VoucherSpecifications {
                     predicates.add(cb.equal(root.get("user").get("id"), personalFilter.getUserId()));
                 }
                 query.orderBy(
+                        cb.desc(root.get("updatedAt")),
                         cb.asc(root.get("status")),
                         cb.asc(root.get("title"))
                 );

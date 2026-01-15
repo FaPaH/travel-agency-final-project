@@ -31,6 +31,7 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final TokenStorageService<VoucherPaginatedResponse> voucherPageStorage;
 
     @Override
@@ -58,11 +59,8 @@ public class VoucherServiceImpl implements VoucherService {
             throw new NotEnoughBalanceException("Not enough balance");
         }
 
-        user.setBalance(user.getBalance().subtract(voucher.getPrice()));
-
         voucher.setUser(user);
         voucher.setStatus(VoucherStatus.REGISTERED);
-        userRepository.save(user);
 
         voucherPageStorage.clearAll();
 
@@ -109,7 +107,31 @@ public class VoucherServiceImpl implements VoucherService {
                     () -> new EntityNotFoundException("Voucher not found")
             );
 
+            User user = voucher.getUser();
+
             if (statusRequest.getVoucherStatus() != null) {
+                System.out.println("STATUS IS NOT NULL");
+                switch (VoucherStatus.valueOf(statusRequest.getVoucherStatus())) {
+                    case PAID:
+                        System.out.println("CASE PAID " + user);
+                        BigDecimal newBalance = user.getBalance().subtract(voucher.getPrice());
+
+                        System.out.println("NEW BALANCE " + newBalance);
+                        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+                            throw new NotEnoughBalanceException("Not enough balance");
+                        }
+
+                        user.setBalance(newBalance);
+                        System.out.println("NEW USER BALANCE " + user.getBalance());
+                        userRepository.save(user);
+                        break;
+
+                    case CANCELED:
+                        user.setBalance(user.getBalance().add(voucher.getPrice()));
+                        userRepository.save(user);
+                        break;
+
+                }
                 voucher.setStatus(VoucherStatus.valueOf(statusRequest.getVoucherStatus()));
             }
             if (statusRequest.getIsHot() != null) {

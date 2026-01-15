@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 @Builder
 @Table(name = "users")
+@ToString
 public class User extends BaseEntity implements UserDetails {
 
     @Id
@@ -47,6 +48,7 @@ public class User extends BaseEntity implements UserDetails {
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Column(name = "vouchers")
+    @ToString.Exclude
     private List<Voucher> vouchers;
 
     @Column(name = "phone_number")

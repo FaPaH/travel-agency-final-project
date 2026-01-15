@@ -1,4 +1,12 @@
 <div th:fragment="voucher-list-fragment" id="voucher-list">
+
+    <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>Success!</strong> <span th:text="${message}"></span>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <table class="table table-bordered">
         <thead>
         <tr>
@@ -15,7 +23,14 @@
             <td th:text="${voucher.title}"></td>
             <td th:text="${voucher.description}"></td>
             <td th:text="${voucher.price}"></td>
-            <td sec:authorize="isAuthenticated()"><a th:href="@{/vouchers/order}" class="btn btn-outline-success me-2" type="button">Order</a></td>
+            <td sec:authorize="isAuthenticated()">
+                <button class="btn btn-sm btn-outline-primary"
+                        th:attr="hx-patch=@{/vouchers/order/{voucherId}(voucherId=${voucher.id})}"
+                        hx-target="#voucher-list"
+                        hx-swap="outerHTML">
+                    Order
+                </button>
+            </td>
         </tr>
         <tr th:if="${#lists.isEmpty(vouchers.getData())}">
             <td colspan="3">There is no vouchers</td>
