@@ -192,8 +192,7 @@ public class VoucherServiceImpl implements VoucherService {
             isEmpty = adminFilter.getStatuses() == null &&
                         adminFilter.getIsHot() == null &&
                         adminFilter.getVoucherId() == null &&
-                        adminFilter.getTitle() == null &&
-                    (adminFilter.getShowEmpty() != null && !adminFilter.getShowEmpty());
+                        adminFilter.getTitle() == null;
         }
 
         return filter.getTours() == null &&

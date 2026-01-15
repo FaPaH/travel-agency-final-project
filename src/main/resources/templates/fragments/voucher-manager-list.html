@@ -20,7 +20,7 @@
         </tbody>
     </table>
 
-    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/manager/vouchers')}"></div>
+    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/vouchers/manager')}"></div>
 </div>
 
 <tr th:fragment="voucher-row-view(voucher)" th:id="'voucher-row-' + ${voucher.id}">

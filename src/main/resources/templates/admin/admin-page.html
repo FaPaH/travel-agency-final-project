@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; border-right: 1px solid #ccc; padding: 20px; background-color: #f8f9fa; }
+        .main-content { flex-grow: 1; padding: 20px; }
+        .nav-btn { display: block; width: 100%; margin-bottom: 10px; text-align: left; }
+        .nav-btn.htmx-request { opacity: 0.5; }
+        .admin-section { border-bottom: 2px solid #dee2e6; margin-bottom: 15px; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/nav-bar :: nav-bar-fragment}"></div>
+
+<div class="layout container-fluid">
+    <aside class="sidebar">
+        <div class="admin-section">
+            <h6>Vouchers Management</h6>
+            <button class="nav-btn btn btn-outline-primary"
+                    hx-get="/vouchers/admin"
+                    hx-target="#content-area">
+                Voucher List
+            </button>
+            <button class="nav-btn btn btn-outline-success"
+                    hx-get="/admin/vouchers/create"
+                    hx-target="#content-area">
+                + Add New Voucher
+            </button>
+        </div>
+
+        <div class="admin-section">
+            <h6>Users Management</h6>
+            <button class="nav-btn btn btn-outline-danger"
+                    hx-get="/admin/users"
+                    hx-target="#content-area">
+                User List
+            </button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div id="content-area">
+            <div hx-get="/vouchers/admin" hx-trigger="load">
+                <p>Select an option from the sidebar to begin...</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

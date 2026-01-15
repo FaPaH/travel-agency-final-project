@@ -29,17 +29,6 @@ public class ManagerController {
         return "manager/manager-page";
     }
 
-    @GetMapping("/vouchers")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
-    public String getVouchers(Model model,
-                              AdminVoucherFilterRequest filterRequest,
-                              @PageableDefault(size = 10, page = 0) Pageable pageable) {
-
-        model.addAttribute("vouchers", voucherService.findWithFilers(filterRequest, pageable));
-
-        return "fragments/voucher-manager-list :: voucher-list-fragment";
-    }
-
     @GetMapping("/edit/{id}")
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public String editRow(@PathVariable UUID id, Model model) {
@@ -58,13 +47,13 @@ public class ManagerController {
 
     @PostMapping("/update/{id}")
     @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
-    public String updateVoucher(@PathVariable UUID id,
+    public String updateVoucher(@PathVariable String id,
                                 VoucherStatusRequest request,
                                 AdminVoucherFilterRequest filterRequest,
                                 @PageableDefault(size = 10, page = 0) Pageable pageable,
                                 Model model) {
 
-        voucherService.changeStatus(id.toString(), request);
+        voucherService.changeStatus(id, request);
 
         model.addAttribute("vouchers", voucherService.findWithFilers(filterRequest, pageable));
 

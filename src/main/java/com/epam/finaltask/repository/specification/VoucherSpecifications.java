@@ -33,9 +33,6 @@ public class VoucherSpecifications {
                 if (adminFilter.getStatuses() != null && !adminFilter.getStatuses().isEmpty()) {
                     predicates.add(root.get("status").in(adminFilter.getStatuses()));
                 }
-                if (adminFilter.getShowEmpty() != null && adminFilter.getShowEmpty()) {
-                    predicates.add(cb.isNull(root.get("user")));
-                }
                 if (adminFilter.getVoucherId() != null) {
                     predicates.add(cb.equal(root.get("id"), adminFilter.getVoucherId()));
                 }
@@ -57,7 +54,7 @@ public class VoucherSpecifications {
                         cb.asc(root.get("title"))
                 );
             } else {
-                predicates.add(cb.isNull(root.get("status")));
+                predicates.add(cb.equal(root.get("status"), VoucherStatus.CREATED));
 
                 query.orderBy(
                         cb.desc(root.get("isHot")),

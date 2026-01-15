@@ -3,7 +3,11 @@ package com.epam.finaltask.service;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.epam.finaltask.dto.PaginatedResponse;
 import com.epam.finaltask.dto.UserDTO;
+import com.epam.finaltask.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService {
@@ -21,4 +25,6 @@ public interface UserService {
     UserDTO getUserByEmail(String email);
 
     void changePassword(UserDTO userDTO, String newPassword);
+
+    PaginatedResponse<UserDTO> getAllUsers(Pageable pageable);
 }

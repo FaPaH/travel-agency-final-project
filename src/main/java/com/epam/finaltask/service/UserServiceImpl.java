@@ -1,13 +1,18 @@
 package com.epam.finaltask.service;
 
+import com.epam.finaltask.dto.PaginatedResponse;
 import com.epam.finaltask.dto.UserDTO;
+import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.exception.AlreadyInUseException;
+import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.model.VoucherPaginatedResponse;
 import com.epam.finaltask.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -97,13 +102,9 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDTO changeAccountStatus(UserDTO userDTO) {
-		if (!userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new EntityNotFoundException("User not found");
-		}
+		userDTO.setActive(!userDTO.isActive());
 
-		User user = userMapper.toUser(userDTO);
-		user.setActive(!user.isActive());
-		UserDTO returnUser = userMapper.toUserDTO(userRepository.save(user));
+		UserDTO returnUser = updateUser(userDTO.getUsername(), userDTO);
 
 		userTokenStorageService.revoke(returnUser.getId());
 		userTokenStorageService.revoke(returnUser.getUsername());
@@ -148,6 +149,13 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(newPassword);
 
 		userMapper.toUserDTO(userRepository.save(user));
+	}
+
+	@Override
+	public PaginatedResponse<UserDTO> getAllUsers(Pageable pageable) {
+		Page<UserDTO> dtoPage = userRepository.findAll(pageable).map(userMapper::toUserDTO);
+
+		return PaginationMapper.toPaginatedResponse(dtoPage);
 	}
 
 	private User getByUsername(String username) {
