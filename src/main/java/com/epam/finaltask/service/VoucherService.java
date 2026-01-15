@@ -11,6 +11,7 @@ public interface VoucherService {
     VoucherDTO create(VoucherDTO voucherDTO);
     VoucherDTO order(String id, String userId);
     VoucherDTO update(String id, VoucherDTO voucherDTO);
+    VoucherDTO getById(String id);
     void delete(String voucherId);
     VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest);;
     VoucherPaginatedResponse findAllByUserId(PersonalVoucherFilterRequest filterRequest, Pageable pageable);

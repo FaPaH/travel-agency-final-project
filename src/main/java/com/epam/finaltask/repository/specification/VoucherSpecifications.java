@@ -1,5 +1,6 @@
 package com.epam.finaltask.repository.specification;
 
+import com.epam.finaltask.dto.AdminVoucherFilterRequest;
 import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
 import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.model.*;
@@ -25,6 +26,33 @@ public class VoucherSpecifications {
                     predicates.add(cb.equal(root.get("user").get("id"), personalFilter.getUserId()));
                 }
                 query.orderBy(
+                        cb.asc(root.get("status")),
+                        cb.asc(root.get("title"))
+                );
+            } else if (filter instanceof AdminVoucherFilterRequest adminFilter) {
+                if (adminFilter.getStatuses() != null && !adminFilter.getStatuses().isEmpty()) {
+                    predicates.add(root.get("status").in(adminFilter.getStatuses()));
+                }
+                if (adminFilter.getShowEmpty() != null && adminFilter.getShowEmpty()) {
+                    predicates.add(cb.isNull(root.get("user")));
+                }
+                if (adminFilter.getVoucherId() != null) {
+                    predicates.add(cb.equal(root.get("id"), adminFilter.getVoucherId()));
+                }
+                if (adminFilter.getIsHot() != null) {
+                    predicates.add(cb.equal(root.get("isHot"), adminFilter.getIsHot()));
+                }
+                if (adminFilter.getTitle() != null && !adminFilter.getTitle().isEmpty()) {
+                    predicates.add(cb.like(
+                            cb.lower(root.get("title")),
+                            "%" + adminFilter.getTitle().toLowerCase() + "%"
+                    ));
+                }
+                if (!predicates.isEmpty()) {
+                    predicates.add(cb.or(predicates.toArray(new Predicate[0])));
+                }
+                query.orderBy(
+                        cb.desc(root.get("isHot")),
                         cb.asc(root.get("status")),
                         cb.asc(root.get("title"))
                 );

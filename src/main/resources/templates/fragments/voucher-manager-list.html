@@ -1,0 +1,84 @@
+<div th:fragment="voucher-list-fragment" id="voucher-list">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th scope="col">#ID</th>
+            <th scope="col">Voucher Title</th>
+            <th scope="col">Status</th>
+            <th scope="col">Is Hot</th>
+            <th scope="col">Actions</th>
+        </tr>
+        </thead>
+        <tbody id="voucher-table-body">
+        <th:block th:each="v : ${vouchers.getData()}">
+            <tr th:replace="~{:: voucher-row-view(voucher=${v})}"></tr>
+        </th:block>
+
+        <tr th:if="${#lists.isEmpty(vouchers.getData())}">
+            <td colspan="5" class="text-center">No vouchers found</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/manager/vouchers')}"></div>
+</div>
+
+<tr th:fragment="voucher-row-view(voucher)" th:id="'voucher-row-' + ${voucher.id}">
+    <td th:text="${voucher.id}"></td>
+    <td th:text="${voucher.title}"></td>
+    <td th:text="${voucher.status == null ? 'NULL' : voucher.status}"></td>
+    <td th:text="${voucher.isHot ? '🔥 Yes' : 'No'}"></td>
+    <td>
+        <button class="btn btn-sm btn-outline-primary"
+                th:attr="hx-get=@{/manager/edit/{id}(id=${voucher.id})}"
+                th:hx-target="'#voucher-row-' + ${voucher.id}"
+                hx-swap="outerHTML">
+            Edit
+        </button>
+    </td>
+</tr>
+
+<tr th:fragment="voucher-row-edit(voucher)" th:id="'voucher-row-' + ${voucher.id}">
+    <td th:text="${voucher.id}"></td>
+    <td th:text="${voucher.title}"></td>
+
+    <td>
+        <select name="voucherStatus" class="form-control form-control-sm">
+            <option th:each="status : ${T(com.epam.finaltask.model.VoucherStatus).values()}"
+                    th:value="${status}"
+                    th:text="${status}"
+                    th:selected="${status == voucher.status}">
+            </option>
+        </select>
+    </td>
+
+    <td>
+        <div class="custom-control custom-switch">
+            <input type="checkbox"
+                   class="custom-control-input"
+                   th:id="'hot-switch-' + ${voucher.id}"
+                   name="isHot"
+                   value="true"
+                   th:checked="${voucher.isHot}">
+            <label class="custom-control-label" th:for="'hot-switch-' + ${voucher.id}"></label>
+
+            <input type="hidden" name="isHot" value="false">
+        </div>
+    </td>
+
+    <td>
+        <button class="btn btn-sm btn-success"
+                th:attr="hx-post=@{/manager/update/{id}(id=${voucher.id})}"
+                th:hx-include="'#voucher-row-' + ${voucher.id}"
+                hx-target="#voucher-list"
+                hx-swap="outerHTML">
+            Save
+        </button>
+        <button class="btn btn-sm btn-secondary"
+                th:attr="hx-get=@{/manager/row/{id}(id=${voucher.id})}"
+                th:hx-target="'#voucher-row-' + ${voucher.id}"
+                hx-swap="outerHTML">
+            Cancel
+        </button>
+    </td>
+</tr>

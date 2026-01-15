@@ -2,6 +2,7 @@ package com.epam.finaltask.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,10 +10,13 @@ import java.util.UUID;
 
 @Setter
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class VoucherDTO {
 
+    @ToString.Include
     private String id;
 
+    @ToString.Include
     private String title;
 
     private String description;
@@ -31,6 +35,7 @@ public class VoucherDTO {
 
     private LocalDate evictionDate;
 
+    @ToString.Include
     private UUID userId;
 
     private Boolean isHot;

@@ -81,7 +81,6 @@ public class AuthenticationController {
     }
 
     @GetMapping("/reset-password-form")
-    @PreAuthorize("isAuthenticated()")
     public String getResetForm(@AuthenticationPrincipal User user,
                                Model model) {
 
@@ -99,7 +98,6 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset-password")
-    @PreAuthorize("isAuthenticated()")
     public String requestReset(@AuthenticationPrincipal User user,
                                @ModelAttribute("resetRequest") @Valid ResetRequest resetRequest,
                                Model model) {
@@ -116,7 +114,6 @@ public class AuthenticationController {
     }
 
     @GetMapping("/reset-password/validate")
-    @PreAuthorize("isAuthenticated()")
     public String showResetForm(@RequestParam("token") String token, Model model) {
 
         if(!resetService.validateToken(token)) {

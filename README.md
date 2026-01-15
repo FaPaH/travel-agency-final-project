@@ -90,7 +90,7 @@ You should use and successfully implement next points:
 - `Pagination and sorting`
 - `Other Spring technologies`
 - `Swagger API`
-- `Thymeleaf`
+- `Thymeleaf`[nav-bar.html](src%2Fmain%2Fresources%2Ftemplates%2Ffragments%2Fnav-bar.html)
 
 ## Recommendations
 
@@ -105,7 +105,8 @@ You should use and successfully implement next points:
 
 ## For me
 
-Обновлять jwt логаут на true
+Чекнуть можно ли не правильные почты редиректить и говорить что не могут послать сообщение на такую почту
+Добавить кнопку обновленияя пароля на логин форму и заменять логин форму на ресет при нажатии
 Сделать что работал логин/регистрация как нужно, сделать логаут - готово но перепроверить нужно 
 Сделать профиль где показывает инфу юзера и там же можно изменить данные свои и все его ваучеры с фильтром
 Сделать рабочим ресет пароля

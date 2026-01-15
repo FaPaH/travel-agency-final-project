@@ -1,9 +1,6 @@
 package com.epam.finaltask.service;
 
-import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
-import com.epam.finaltask.dto.VoucherFilerRequest;
-import com.epam.finaltask.dto.VoucherStatusRequest;
-import com.epam.finaltask.dto.VoucherDTO;
+import com.epam.finaltask.dto.*;
 import com.epam.finaltask.exception.AlreadyInUseException;
 import com.epam.finaltask.exception.NotEnoughBalanceException;
 import com.epam.finaltask.mapper.PaginationMapper;
@@ -86,6 +83,15 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
+    public VoucherDTO getById(String id) {
+        if (!voucherRepository.existsById(UUID.fromString(id))) {
+            throw new EntityNotFoundException("Voucher not found");
+        }
+
+        return voucherMapper.toVoucherDTO(voucherRepository.getReferenceById(UUID.fromString(id)));
+    }
+
+    @Override
     public void delete(String voucherId) {
         if (!voucherRepository.existsById(UUID.fromString(voucherId))) {
             throw new EntityNotFoundException("Voucher not found");
@@ -105,10 +111,9 @@ public class VoucherServiceImpl implements VoucherService {
 
             if (statusRequest.getVoucherStatus() != null) {
                 voucher.setStatus(VoucherStatus.valueOf(statusRequest.getVoucherStatus()));
-            } else if (statusRequest.getIsHot() != null) {
+            }
+            if (statusRequest.getIsHot() != null) {
                 voucher.setIsHot(statusRequest.getIsHot());
-            } else {
-                throw new DataIntegrityViolationException("Requested statuses is not set");
             }
 
             voucherPageStorage.clearAll();
@@ -181,6 +186,14 @@ public class VoucherServiceImpl implements VoucherService {
 
         if (filter instanceof PersonalVoucherFilterRequest personalFilter) {
             isEmpty = personalFilter.getStatuses() == null;
+        }
+
+        if (filter instanceof AdminVoucherFilterRequest adminFilter) {
+            isEmpty = adminFilter.getStatuses() == null &&
+                        adminFilter.getIsHot() == null &&
+                        adminFilter.getVoucherId() == null &&
+                        adminFilter.getTitle() == null &&
+                    (adminFilter.getShowEmpty() != null && !adminFilter.getShowEmpty());
         }
 
         return filter.getTours() == null &&

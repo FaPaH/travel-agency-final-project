@@ -1,7 +1,68 @@
-<form th:fragment="filter-fragment"
-      hx-get="/vouchers"
-      hx-target="#voucher-list"
-      hx-trigger="change, keyup delay:500ms form:input">
+<div th:fragment="admin-search-fragment">
+
+    <button class="btn btn-outline-primary mb-3"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#adminFilterPanel"
+            aria-expanded="false">
+        Additional Filters ↓
+    </button>
+
+    <div class="collapse" id="adminFilterPanel">
+        <div class="card card-body mb-3 shadow-sm border-primary">
+            <div class="column">
+
+                <div class="col-12 mb-3">
+                    <label class="fw-bold mb-2">Поиск ваучера:</label>
+                    <div class="d-flex flex-column gap-2">
+                        <input type="text" name="title"
+                               class="form-control w-100"
+                               placeholder="Введите название (Title)...">
+                        <input type="text" name="voucherId"
+                               class="form-control w-100"
+                               placeholder="Введите UUID ваучера...">
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                        <div class="statuses-group">
+                            <label class="fw-bold d-block mb-1">Статусы:</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                <div th:each="status : ${T(com.epam.finaltask.model.VoucherStatus).values()}" class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="statuses"
+                                           th:value="${status}" th:id="${'filter-status-' + status}">
+                                    <label class="form-check-label" th:for="${'filter-status-' + status}" th:text="${status}"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hot-filter-group">
+                            <label class="fw-bold d-block mb-1 text-danger">🔥 Только Hot:</label>
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox"
+                                       name="isHot" id="filter-is-hot" value="true"
+                                       style="width: 3em; height: 1.5em; cursor: pointer;">
+                                <label class="form-check-label" for="filter-is-hot"></label>
+                            </div>
+
+                            <label class="fw-bold d-block mb-1 text-danger">👤 Только свободные (Empty)</label>
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox"
+                                       name="showEmpty" id="filter-show-empty" value="true"
+                                       style="width: 3em; height: 1.5em; cursor: pointer;">
+                                <label class="form-check-label" for="filter-show-empty"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="filter-fragment">
 
     <button class="btn btn-outline-primary mb-3"
             type="button"
@@ -82,4 +143,4 @@
             </div>
         </div>
     </div>
-</form>
+</div>
