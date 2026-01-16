@@ -112,7 +112,7 @@
 <div th:fragment="create-fragment" class="container mt-4">
     <div class="card shadow">
         <div class="card-header bg-success text-white">
-            <h4 class="mb-0">Создание нового ваучера</h4>
+            <h4 class="mb-0">Voucher Creation</h4>
         </div>
         <div class="card-body">
             <form hx-post="/admin/vouchers/create"
@@ -121,37 +121,37 @@
 
                 <div class="row">
                     <div class="col-md-8 mb-3">
-                        <label class="form-label fw-bold">Название ваучера</label>
+                        <label class="form-label fw-bold">Voucher name</label>
                         <input type="text" name="title" class="form-control" placeholder="Введите название..." required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Цена (BYN/USD)</label>
+                        <label class="form-label fw-bold">Price (USD)</label>
                         <input type="number" name="price" class="form-control" step="0.01" placeholder="0.00" required>
                     </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Описание</label>
+                    <label class="form-label fw-bold">Description</label>
                     <textarea name="description" class="form-control" rows="3" placeholder="Подробное описание тура..."></textarea>
                 </div>
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Тип тура</label>
+                        <label class="form-label fw-bold">Tour type</label>
                         <select name="tourType" class="form-control">
                             <option th:each="type : ${T(com.epam.finaltask.model.TourType).values()}"
                                     th:value="${type}" th:text="${type}"></option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Класс отеля</label>
+                        <label class="form-label fw-bold">Hotel type</label>
                         <select name="hotelType" class="form-control">
                             <option th:each="type : ${T(com.epam.finaltask.model.HotelType).values()}"
                                     th:value="${type}" th:text="${type}"></option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Трансфер</label>
+                        <label class="form-label fw-bold">Transfer</label>
                         <select name="transferType" class="form-control">
                             <option th:each="type : ${T(com.epam.finaltask.model.TransferType).values()}"
                                     th:value="${type}" th:text="${type}"></option>
@@ -161,11 +161,11 @@
 
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Дата прибытия</label>
+                        <label class="form-label fw-bold">Arrive date</label>
                         <input type="date" name="arrivalDate" class="form-control" required>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Дата выселения</label>
+                        <label class="form-label fw-bold">Eviction date</label>
                         <input type="date" name="evictionDate" class="form-control" required>
                     </div>
                     <div class="col-md-4 mb-3 d-flex align-items-end p-2">
@@ -173,7 +173,7 @@
                             <input class="form-check-input shadow-none" type="checkbox"
                                    name="isHot" value="true" id="isHotCreate"
                                    style="width: 40px; height: 20px;">
-                            <label class="form-check-label fw-bold text-danger ms-2" for="isHotCreate">🔥 Горящий тур</label>
+                            <label class="form-check-label fw-bold text-danger ms-2" for="isHotCreate">🔥 Hot</label>
                             <input type="hidden" name="isHot" value="false">
                         </div>
                     </div>
@@ -187,10 +187,10 @@
                     <button type="button" class="btn btn-secondary"
                             hx-get="/vouchers/admin"
                             hx-target="#content-area">
-                        Отмена
+                        Cancel
                     </button>
                     <button type="submit" class="btn btn-success px-4">
-                        Создать ваучер
+                        Create voucher
                     </button>
                 </div>
             </form>

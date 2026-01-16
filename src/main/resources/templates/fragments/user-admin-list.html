@@ -1,6 +1,6 @@
 <div th:fragment="user-list-fragment" id="user-admin-list" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-        <h3>Управление пользователями</h3>
+        <h3>User Management</h3>
     </div>
 
     <table class="table table-hover table-bordered shadow-sm bg-white">
@@ -8,12 +8,12 @@
         <tr>
             <th>ID</th>
             <th>Username</th>
-            <th>Статус</th>
-            <th>Имя Фамилия</th>
-            <th>Контакты</th>
-            <th>Баланс</th>
+            <th>Status</th>
+            <th>First/Last name</th>
+            <th>Contacts</th>
+            <th>Balance</th>
             <th>Provider</th>
-            <th>Действия</th>
+            <th>Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -22,7 +22,7 @@
         </th:block>
 
         <tr th:if="${#lists.isEmpty(users)}">
-            <td colspan="8" class="text-center text-muted">Пользователи не найдены</td>
+            <td colspan="8" class="text-center text-muted">User not found</td>
         </tr>
         </tbody>
     </table>
@@ -61,7 +61,7 @@
                 hx-include="closest tr"
                 hx-target="#user-admin-list"
                 hx-swap="outerHTML"
-                th:hx-confirm="${user.active ? 'Заблокировать пользователя ' + user.username + '?' : 'Разблокировать пользователя ' + user.username + '?'}">
+                th:hx-confirm="${user.active ? 'Block user ' + user.username + '?' : 'Unblock user ' + user.username + '?'}">
         </button>
     </td>
 </tr>

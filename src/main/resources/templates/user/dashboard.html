@@ -4,13 +4,7 @@
   <title>Dashboard</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <style>
-    .layout { display: flex; }
-    .sidebar { width: 200px; border-right: 1px solid #ccc; padding: 20px; }
-    .main-content { flex-grow: 1; padding: 20px; }
-    .nav-btn { display: block; width: 100%; margin-bottom: 10px; cursor: pointer; }
-    .nav-btn.htmx-request { opacity: 0.5; }
-  </style>
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
 </head>
 <body>
 
@@ -19,36 +13,37 @@
 
 <h1 align="center">Dashboard</h1>
 
-<div class="layout container">
+<div class="layout container-fluid">
   <aside class="sidebar">
-    <button class="nav-btn"
+    <button class="nav-btn btn btn-outline-primary"
             hx-get="/user/profile"
             hx-trigger="load, click"
             hx-target="#content-area">
       Profile Info
     </button>
-    <button class="nav-btn"
+    <button class="nav-btn btn btn-outline-primary"
             hx-get="/vouchers/user"
             hx-target="#content-area">
       My Vouchers
     </button>
-    <button class="nav-btn"
+    <button class="nav-btn btn btn-outline-primary"
             hx-get="/user/profile/balance"
             hx-target="#content-area">
       Balance
     </button>
-    <button class="nav-btn"
+    <button class="nav-btn btn btn-outline-primary"
             hx-get="/auth/reset-password-form"
             hx-target="#content-area">
       Reset Password
     </button>
-    <button hx-post="/auth/logout" class="nav-btn">
+    <button hx-post="/auth/logout"
+            class="nav-btn btn btn-outline-primary">
       Logout
     </button>
   </aside>
 
   <main class="main-content" id="content-area">
-    <p>Выберите раздел в меню слева.</p>
+    <p>Loading...</p>
   </main>
 </div>
 

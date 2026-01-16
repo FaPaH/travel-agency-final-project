@@ -1,34 +1,51 @@
 <tr th:fragment="pagination-fragment(v, baseUrl)">
-    <td colspan="3">
-        <div class="pagination">
+    <td colspan="8"> <div class="d-flex align-items-center justify-content-between w-100 px-3 py-2">
+
+        <div style="flex: 1; display: flex; justify-content: start;">
             <button th:if="${v.currentPage > 0}"
+                    class="btn btn-sm btn-outline-secondary"
                     th:attr="hx-get=@{|${baseUrl}|(page=${v.currentPage - 1})}"
                     hx-include="form"
                     hx-target="#voucher-list">
-                ← Back
+                &larr; Back
             </button>
+            <div th:unless="${v.currentPage > 0}" style="width: 1px;"></div>
+        </div>
 
-            <span   th:if="${i >= v.currentPage - 1 and i <= v.currentPage + 5}"
-                    th:each="i : ${#numbers.sequence(1, v.totalPages)}">
-                <a th:if="${v.currentPage != i - 1}"
-                   style="cursor: pointer; margin: 0 5px; text-decoration: underline;"
-                   th:attr="hx-get=@{|${baseUrl}|(page=${i - 1})}"
-                   th:text="${i}"
-                   hx-include="form"
-                   hx-target="#voucher-list"></a>
+        <div class="pagination-numbers" style="flex: 2; display: flex; justify-content: center; align-items: center; gap: 5px;">
+            <th:block th:each="i : ${#numbers.sequence(1, v.totalPages)}">
+        <span th:if="${i >= v.currentPage - 1 and i <= v.currentPage + 3}">
 
-                <span th:if="${v.currentPage == i - 1}"
-                      th:text="${i}"
-                      style="font-weight: bold; margin: 0 5px;">
-                </span>
+            <a th:if="${v.currentPage != i - 1}"
+               class="btn btn-sm btn-outline-primary border-0"
+               style="cursor: pointer; font-weight: 500;"
+               th:attr="hx-get=@{|${baseUrl}|(page=${i - 1})}"
+               th:text="${i}"
+               hx-include="form"
+               hx-target="#voucher-list">
+            </a>
+
+            <span th:if="${v.currentPage == i - 1}"
+                  th:text="${i}"
+                  class="btn btn-sm btn-primary active shadow-sm"
+                  style="cursor: default; font-weight: bold; min-width: 32px;">
             </span>
 
+        </span>
+            </th:block>
+        </div>
+
+        <div style="flex: 1; display: flex; justify-content: end;">
             <button th:if="${v.currentPage + 1 < v.totalPages}"
+                    class="btn btn-sm btn-outline-secondary"
                     th:attr="hx-get=@{|${baseUrl}|(page=${v.currentPage + 1})}"
                     hx-include="form"
                     hx-target="#voucher-list">
-                Next →
+                Next &rarr;
             </button>
+            <div th:unless="${v.currentPage + 1 < v.totalPages}" style="width: 1px;"></div>
         </div>
+
+    </div>
     </td>
 </tr>

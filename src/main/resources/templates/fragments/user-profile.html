@@ -1,5 +1,5 @@
 <div th:fragment="user-info-fragment" id="profile-container">
-    <h4>Мой профиль</h4>
+    <h4>My profile</h4>
     <div class="card p-3" id="profile-details">
         <p><strong>ID:</strong> <span th:text="${user.id}">1</span></p>
         <p><strong>Username:</strong> <span th:text="${user.username}">admin</span></p>
@@ -56,14 +56,14 @@
     <div id="top-up-container">
         <form hx-post="/user/profile/balance/top-up" hx-target="#profile-balance-wrapper">
             <div class="form-group">
-                <label for="amount">Сумма пополнения</label>
+                <label for="amount">Top up amount</label>
                 <input type="number"
                        id="amount"
                        name="amount"
                        class="form-control"
                        placeholder="Введите сумму">
             </div>
-            <button type="submit" class="btn btn-primary">Пополнить</button>
+            <button type="submit" class="btn btn-primary">Top up</button>
         </form>
     </div>
 </div>

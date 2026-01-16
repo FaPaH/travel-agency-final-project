@@ -4,14 +4,7 @@
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <style>
-        .layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 250px; border-right: 1px solid #ccc; padding: 20px; background-color: #f8f9fa; }
-        .main-content { flex-grow: 1; padding: 20px; }
-        .nav-btn { display: block; width: 100%; margin-bottom: 10px; text-align: left; }
-        .nav-btn.htmx-request { opacity: 0.5; }
-        .admin-section { border-bottom: 2px solid #dee2e6; margin-bottom: 15px; padding-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
 </head>
 <body>
 
@@ -41,12 +34,19 @@
                 User List
             </button>
         </div>
+
+        <form id="admin-filter"
+              hx-get="/admin/vouchers"
+              hx-target="#voucher-list"
+              hx-trigger="change, keyup delay:500ms from:input">
+            <div th:replace="~{fragments/filter :: admin-search-fragment}"></div>
+        </form>
     </aside>
 
     <main class="main-content">
         <div id="content-area">
             <div hx-get="/admin/vouchers" hx-trigger="load">
-                <p>Select an option from the sidebar to begin...</p>
+                <p>Loading...</p>
             </div>
         </div>
     </main>
