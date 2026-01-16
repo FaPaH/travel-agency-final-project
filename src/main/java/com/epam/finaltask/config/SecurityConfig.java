@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -24,13 +25,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -148,7 +154,10 @@ public class SecurityConfig {
                 String email = oAuth2User.getAttribute("email");
                 String username = oAuth2User.getAttribute("login");
                 User user;
-                boolean isRest = checkIfRest(request);
+                String clientType = request.getParameter("client_type");
+
+                DefaultSavedRequest savedRequest = (DefaultSavedRequest) new HttpSessionRequestCache()
+                        .getRequest(request, response);
 
                 if (email != null) {
                     user = userMapper.toUser(userService.getUserByEmail(email));
@@ -162,11 +171,17 @@ public class SecurityConfig {
                 refreshTokenStorageService.revoke(user.getId().toString());
                 refreshTokenStorageService.store(user.getId().toString(), refreshToken);
 
-                if (isRest) {
-                    String targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
-                            .queryParam("accessToken", accessToken)
-                            .queryParam("refreshToken", refreshToken)
-                            .build().toUriString();
+                String targetUrl = "/";
+
+                if (clientType != null) {
+                    String originalUrl = savedRequest.getRedirectUrl();
+
+                    if (originalUrl.contains("localhost:8080")) {
+                        targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
+                                .queryParam("accessToken", accessToken)
+                                .queryParam("refreshToken", refreshToken)
+                                .build().toUriString();
+                    }
 
                     response.sendRedirect(targetUrl);
                 } else {
@@ -190,11 +205,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    private boolean checkIfRest(HttpServletRequest request) {
-        String referer = request.getHeader("Referer");
-        return referer != null && referer.contains("localhost:8080"); // Например, ваш React/Vue фронтенд
     }
 
     private void saveTokensToCookies(HttpServletResponse response, String access, String refresh) {

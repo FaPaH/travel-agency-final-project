@@ -28,7 +28,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         try {
             return processOAuth2User(userRequest, oAuth2User);
         } catch (Exception ex) {
-            throw new OAuth2AuthenticationException(ex.getMessage());
+            throw new OAuth2AuthenticationException(ex.getCause().toString());
         }
     }
 
@@ -52,6 +52,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (user == null) {
             user = registerNewUser(userRequest, oAuth2User, email, login);
         } else {
+            if (!user.isAccountNonLocked()) {
+                throw new OAuth2AuthenticationException("User account is disabled");
+            }
+
             user = updateExistingUser(user, userRequest, oAuth2User);
         }
 
