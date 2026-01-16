@@ -22,7 +22,7 @@
         <div class="admin-section">
             <h6>Vouchers Management</h6>
             <button class="nav-btn btn btn-outline-primary"
-                    hx-get="/vouchers/admin"
+                    hx-get="/admin/vouchers"
                     hx-target="#content-area">
                 Voucher List
             </button>
@@ -45,7 +45,7 @@
 
     <main class="main-content">
         <div id="content-area">
-            <div hx-get="/vouchers/admin" hx-trigger="load">
+            <div hx-get="/admin/vouchers" hx-trigger="load">
                 <p>Select an option from the sidebar to begin...</p>
             </div>
         </div>

@@ -15,14 +15,14 @@
 <div>
     <div class="container mt-4 voucher-container">
         <form id="manager-filter"
-              hx-get="/vouchers/manager"
+              hx-get="/manager/vouchers"
               hx-target="#voucher-list"
               hx-trigger="change, keyup delay:500ms from:input">
 
             <div th:replace="~{fragments/filter :: admin-search-fragment}"></div>
         </form>
 
-        <div id="voucher-list" hx-get="/vouchers/manager" hx-trigger="load">
+        <div id="voucher-list" hx-get="/manager/vouchers" hx-trigger="load">
             <p>Loading...</p>
         </div>
     </div>

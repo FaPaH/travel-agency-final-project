@@ -21,6 +21,7 @@ public class VoucherDTO {
 
     private String description;
 
+    @ToString.Include
     private BigDecimal price;
 
     private String tourType;
@@ -38,6 +39,7 @@ public class VoucherDTO {
     @ToString.Include
     private UUID userId;
 
-    private Boolean isHot;
+    @ToString.Include
+    private Boolean isHot = false;
 
 }

@@ -1,14 +1,12 @@
 package com.epam.finaltask.contoller;
 
 import com.epam.finaltask.dto.AdminVoucherFilterRequest;
-import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.service.UserService;
+import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.service.VoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,30 +21,24 @@ import java.util.UUID;
 public class AdminController {
 
     private final VoucherService voucherService;
-    private final UserService userService;
 
-    @GetMapping("/users")
-    public String getAllUsers(Model model, Pageable pageable) {
-        model.addAttribute("users", userService.getAllUsers(pageable));
-
-        return "fragments/user-admin-list :: user-list-fragment";
-    }
-
-    @PostMapping("/users/toggle-status")
-    public String blockUser(UserDTO userDto, Model model, Pageable pageable) {
-        userService.changeAccountStatus(userDto);
-
-        model.addAttribute("users", userService.getAllUsers(pageable));
-
-        return "fragments/user-admin-list :: user-list-fragment";
-    }
-
-    @GetMapping
+    @GetMapping("/dashboard")
     public String admin(Model model) {
         return "admin/admin-page";
     }
 
-    @DeleteMapping("/vouchers/delete/{id}")
+    @GetMapping("/vouchers")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public String getVouchersAdmin(Model model,
+                                   AdminVoucherFilterRequest filterRequest,
+                                   @PageableDefault(size = 10, page = 0) Pageable pageable) {
+
+        model.addAttribute("vouchers", voucherService.findWithFilers(filterRequest, pageable));
+
+        return "fragments/voucher-admin-list :: voucher-list-fragment";
+    }
+
+    @DeleteMapping("/vouchers/{id}")
     @ResponseBody
     public void deleteVoucher(@PathVariable UUID id) {
         voucherService.delete(id.toString());
@@ -83,9 +75,16 @@ public class AdminController {
         return "fragments/voucher-admin-list :: voucher-edit";
     }
 
-    @PatchMapping("/user/block")
-    public ResponseEntity<UserDTO> changeAccountStatus(@RequestBody UserDTO userDTO) {
+    @PostMapping("/vouchers/update/{id}")
+    public String updateVoucher(@PathVariable String id,
+                                VoucherDTO voucherDTO,
+                                @PageableDefault(size = 10, page = 0) Pageable pageable,
+                                Model model) {
 
-        return ResponseEntity.ok().body(userService.changeAccountStatus(userDTO));
+        voucherService.update(id, voucherDTO);
+
+        model.addAttribute("vouchers", voucherService.findWithFilers(new VoucherFilerRequest(), pageable));
+
+        return "fragments/voucher-admin-list :: voucher-list-fragment";
     }
 }

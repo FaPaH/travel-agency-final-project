@@ -13,10 +13,10 @@
                     <a class="nav-link active" aria-current="page" th:href="@{/user/dashboard}">Profile</a>
                 </li>
                 <li sec:authorize="hasAnyRole('MANAGER', 'ADMIN')" class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/manager}">Manager</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/manager/dashboard}">Manager</a>
                 </li>
                 <li sec:authorize="hasRole('ADMIN')" class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/admin}">Admin</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/admin/dashboard}">Admin</a>
                 </li>
             </ul>
             <nav class="navbar navbar-light bg-light">

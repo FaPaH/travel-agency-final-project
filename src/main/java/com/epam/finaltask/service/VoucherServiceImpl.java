@@ -31,12 +31,13 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
     private final UserRepository userRepository;
-    private final UserService userService;
     private final TokenStorageService<VoucherPaginatedResponse> voucherPageStorage;
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
+
         voucherPageStorage.clearAll();
+
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
     }
 

@@ -18,19 +18,28 @@ import java.util.UUID;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/manager")
+@PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
 public class ManagerController {
 
     private final VoucherService voucherService;
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    @GetMapping("/dashboard")
     public String getManagerPage(Model model) {
 
         return "manager/manager-page";
     }
 
+    @GetMapping("/vouchers")
+    public String getVouchersManager(Model model,
+                                     AdminVoucherFilterRequest filterRequest,
+                                     @PageableDefault(size = 10, page = 0) Pageable pageable) {
+
+        model.addAttribute("vouchers", voucherService.findWithFilers(filterRequest, pageable));
+
+        return "fragments/voucher-manager-list :: voucher-list-fragment";
+    }
+
     @GetMapping("/edit/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public String editRow(@PathVariable UUID id, Model model) {
         VoucherDTO voucher = voucherService.getById(id.toString());
         model.addAttribute("voucher", voucher);
@@ -38,7 +47,6 @@ public class ManagerController {
     }
 
     @GetMapping("/row/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public String getRow(@PathVariable UUID id, Model model) {
         VoucherDTO voucher = voucherService.getById(id.toString());
         model.addAttribute("voucher", voucher);
@@ -46,7 +54,6 @@ public class ManagerController {
     }
 
     @PostMapping("/update/{id}")
-    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
     public String updateVoucher(@PathVariable String id,
                                 VoucherStatusRequest request,
                                 AdminVoucherFilterRequest filterRequest,

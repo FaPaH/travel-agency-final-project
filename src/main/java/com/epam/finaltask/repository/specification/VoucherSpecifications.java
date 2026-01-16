@@ -52,7 +52,8 @@ public class VoucherSpecifications {
                 query.orderBy(
                         cb.desc(root.get("isHot")),
                         cb.asc(root.get("status")),
-                        cb.asc(root.get("title"))
+                        cb.asc(root.get("title")),
+                        cb.desc(root.get("updatedAt"))
                 );
             } else {
                 predicates.add(cb.equal(root.get("status"), VoucherStatus.CREATED));

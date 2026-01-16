@@ -103,10 +103,10 @@ CREATE TABLE IF NOT EXISTS vouchers (
 
     price NUMERIC(10, 2),
 
-    voucher_tour_type tour_type NOT NULL,
-    voucher_transfer_type transfer_type NOT NULL,
-    voucher_hotel_type hotel_type NOT NULL,
-    voucher_status_type status_type DEFAULT 'CREATED' NOT NULL,
+    voucher_tour_type tour_type,
+    voucher_transfer_type transfer_type,
+    voucher_hotel_type hotel_type,
+    voucher_status_type status_type DEFAULT 'CREATED',
 
     arrival_date DATE,
     eviction_date DATE,
