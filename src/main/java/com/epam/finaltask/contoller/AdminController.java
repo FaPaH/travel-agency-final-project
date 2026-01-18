@@ -4,12 +4,16 @@ import com.epam.finaltask.dto.AdminVoucherFilterRequest;
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.service.VoucherService;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -24,11 +28,11 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String admin(Model model) {
+
         return "admin/admin-page";
     }
 
     @GetMapping("/vouchers")
-    @PreAuthorize("hasAnyRole('ADMIN')")
     public String getVouchersAdmin(Model model,
                                    AdminVoucherFilterRequest filterRequest,
                                    @PageableDefault(size = 10, page = 0) Pageable pageable) {
@@ -38,29 +42,43 @@ public class AdminController {
         return "fragments/voucher-admin-list :: voucher-list-fragment";
     }
 
-    @DeleteMapping("/vouchers/{id}")
     @ResponseBody
+    @DeleteMapping("/vouchers/{id}")
     public void deleteVoucher(@PathVariable UUID id) {
+
         voucherService.delete(id.toString());
     }
 
     @GetMapping("/vouchers/create")
     public String createForm(Model model) {
+
         model.addAttribute("voucher", new VoucherDTO());
+
         return "fragments/voucher-admin-list :: create-fragment";
     }
 
     @GetMapping("/row/{id}")
     public String getRow(@PathVariable UUID id, Model model) {
+
         VoucherDTO voucher = voucherService.getById(id.toString());
+
         model.addAttribute("voucher", voucher);
+
         return "fragments/voucher-admin-list :: voucher-row-view";
     }
 
     @PostMapping("/vouchers/create")
-    public String processCreateVoucher(VoucherDTO voucherDTO,
-                                       Model model,
-                                       @PageableDefault(size = 10) Pageable pageable) {
+    public String processCreateVoucher(@ModelAttribute("voucher") @Valid VoucherDTO voucherDTO,
+                                       BindingResult bindingResult,
+                                       HttpServletResponse response,
+                                       @PageableDefault(size = 10) Pageable pageable,
+                                       Model model) {
+
+        if (bindingResult.hasErrors()) {
+            response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            return "fragments/voucher-admin-list :: create-fragment";
+        }
+
         voucherService.create(voucherDTO);
 
         model.addAttribute("vouchers", voucherService.findWithFilers(new AdminVoucherFilterRequest(), pageable));
@@ -70,16 +88,30 @@ public class AdminController {
 
     @GetMapping("/vouchers/edit/{id}")
     public String editFullRow(@PathVariable UUID id, Model model) {
+
         VoucherDTO voucher = voucherService.getById(id.toString());
+
         model.addAttribute("voucher", voucher);
+
         return "fragments/voucher-admin-list :: voucher-edit";
     }
 
     @PostMapping("/vouchers/update/{id}")
     public String updateVoucher(@PathVariable String id,
-                                VoucherDTO voucherDTO,
+                                @ModelAttribute("voucher") @Valid VoucherDTO voucherDTO,
+                                BindingResult bindingResult,
+                                HttpServletResponse response,
                                 @PageableDefault(size = 10, page = 0) Pageable pageable,
                                 Model model) {
+
+        if (bindingResult.hasErrors()) {
+            System.out.println(bindingResult);
+            voucherDTO.setId(id);
+
+            response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+
+            return "fragments/voucher-admin-list :: voucher-edit";
+        }
 
         voucherService.update(id, voucherDTO);
 

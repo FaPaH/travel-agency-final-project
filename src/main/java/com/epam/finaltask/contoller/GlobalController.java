@@ -14,13 +14,11 @@ public class GlobalController {
 
     @GetMapping("index")
     public String index(Model model) {
-
         return "index";
     }
 
     @GetMapping
     public String index2(Model model) {
-
         return "index";
     }
 }

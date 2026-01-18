@@ -1,5 +1,6 @@
 package com.epam.finaltask.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class TopUpRequest {
 
+    @NotBlank
+    private String id;
+
     @NotNull(message = "Sum cant be empty")
-    @PositiveOrZero(message = "Sum must be more than 0 or 0")
+    @PositiveOrZero(message = "Sum must be more than or equals zero")
     private BigDecimal amount;
 }

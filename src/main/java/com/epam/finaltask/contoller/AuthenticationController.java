@@ -10,10 +10,11 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -21,42 +22,57 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-
     private final AuthenticationService authenticationService;
     private final ResetService resetService;
     private final JwtProperties jwtProperties;
     private final UserService userService;
 
     @GetMapping("/sign-in")
-    public String signIn(@ModelAttribute("loginRequest") LoginRequest loginRequest,
-                         Model model) {
+    public String signIn(@ModelAttribute("loginRequest") LoginRequest loginRequest) {
         return "auth/sign-in";
     }
 
     @GetMapping("/sign-up")
-    public String signUp(@ModelAttribute("registerRequest") RegisterRequest registerRequest,
-                         Model model) {
+    public String signUp(@ModelAttribute("registerRequest") RegisterRequest registerRequest) {
         return "auth/sign-up";
     }
 
     @PostMapping("/register")
     public String register(@ModelAttribute("registerRequest") @Valid RegisterRequest registerRequest,
-                                               HttpServletResponse response) {
-        System.out.println(registerRequest);
+                           BindingResult bindingResult,
+                           HttpServletResponse response,
+                           Model model) {
+
+        if (bindingResult.hasErrors()) {
+            response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            return "auth/sign-up :: signup-form";
+        }
+
         AuthResponse authResponse = authenticationService.register(registerRequest);
 
         saveTokensToCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
 
-        return "redirect:/index";
+        response.setHeader("HX-Redirect", "/index");
+        return null;
     }
 
-    @PostMapping("/login")
-    public String login(@ModelAttribute("loginRequest") @Valid LoginRequest loginRequest, HttpServletResponse response) {
+    @PostMapping("/perform_login")
+    public String login(@ModelAttribute("loginRequest") @Valid LoginRequest loginRequest,
+                        HttpServletResponse response,
+                        BindingResult bindingResult,
+                        Model model) {
+
+        if (bindingResult.hasErrors()) {
+            response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            return "auth/sign-in :: login-form";
+        }
+
         AuthResponse authResponse = authenticationService.login(loginRequest);
 
         saveTokensToCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
 
-        return "redirect:/index";
+        response.setHeader("HX-Redirect", "/index");
+        return null;
     }
 
     @GetMapping("/reset-password-form")
@@ -73,13 +89,21 @@ public class AuthenticationController {
         }
 
         model.addAttribute("resetRequest", resetRequest);
+
         return "fragments/reset-password :: reset-password-fragment";
     }
 
     @PostMapping("/reset-password")
     public String requestReset(@AuthenticationPrincipal User user,
                                @ModelAttribute("resetRequest") @Valid ResetRequest resetRequest,
+                               BindingResult bindingResult,
+                               HttpServletResponse response,
                                Model model) {
+
+        if (bindingResult.hasErrors()) {
+            response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            return "fragments/reset-password :: reset-password-fragment";
+        }
 
         userService.updateUser(user.getUsername(), UserDTO.builder()
                 .email(resetRequest.getEmail())
@@ -93,32 +117,54 @@ public class AuthenticationController {
     }
 
     @GetMapping("/reset-password/validate")
-    public String showResetForm(@RequestParam("token") String token, Model model) {
+    public String showResetForm(@RequestParam("token") String token,
+                                Model model) {
 
         if(!resetService.validateToken(token)) {
             model.addAttribute("error", "The reset link is invalid or has expired.");
             return "auth/reset-password";
         }
 
-        model.addAttribute("token", token);
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setToken(token);
+
         model.addAttribute("validToken", true);
+        model.addAttribute("resetPasswordRequest", request);
+
         return "auth/reset-password";
     }
 
     @PostMapping("/reset-password/confirm")
-    public String confirmReset(@ModelAttribute @Valid ResetPasswordRequest request, HttpServletResponse response) {
+    public String confirmReset(@ModelAttribute("resetPasswordRequest") @Valid ResetPasswordRequest request,
+                               BindingResult bindingResult,
+                               HttpServletResponse response,
+                               Model model) {
+
+        if (bindingResult.hasErrors()) {
+
+            response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+
+            model.addAttribute("validToken", true);
+
+            return "auth/reset-password :: reset-password-final";
+        }
 
         if(!resetService.validateToken(request.getToken())) {
-            return "redirect:/auth/sign-in?error=invalid_token";
+            response.setHeader("HX-Redirect", "/auth/sign-in?error=invalid_token");
+            return null;
         }
 
         authenticationService.resetPassword(request);
         resetCookies(response);
 
-        return "redirect:/auth/sign-in?resetSuccess=true";
+        response.setHeader("HX-Redirect", "/auth/sign-in?resetSuccess=true");
+        return null;
     }
 
-    private void saveTokensToCookies(HttpServletResponse response, String access, String refresh) {
+    private void saveTokensToCookies(HttpServletResponse response,
+                                     String access,
+                                     String refresh) {
+
         Cookie aCookie = new Cookie("jwt_access", access);
         aCookie.setHttpOnly(true);
         aCookie.setPath("/");
@@ -134,6 +180,7 @@ public class AuthenticationController {
     }
 
     private void resetCookies(HttpServletResponse response) {
+
         Cookie aCookie = new Cookie("jwt_access", null);
         aCookie.setPath("/");
         aCookie.setMaxAge(0);

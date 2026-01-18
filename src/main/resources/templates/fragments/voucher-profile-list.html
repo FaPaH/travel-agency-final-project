@@ -22,5 +22,5 @@
         </tbody>
     </table>
 
-    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/vouchers/user')}"></div>
+    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/vouchers/user/__${#authentication.principal.id}__')}"></div>
 </div>

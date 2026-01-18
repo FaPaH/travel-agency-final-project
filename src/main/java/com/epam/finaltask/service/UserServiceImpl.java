@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 		User user = userRepository.findUserByUsername(username)
 				.orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-		if (!user.getEmail().equals(userDTO.getEmail())) {
+		if (user.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
 			if (userRepository.existsByEmailAndIdNot(userDTO.getEmail(), user.getId())) {
 				throw new RuntimeException("Email already exist");
 			}

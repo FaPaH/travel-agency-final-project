@@ -83,6 +83,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/auth/sign-in")
+                        .loginProcessingUrl("/auth/login-security-check")
                         .defaultSuccessUrl("/index", true)
                         .permitAll())
                 .logout(logout -> logout

@@ -45,19 +45,20 @@ public class VoucherController {
         voucherService.order(id, user.getId().toString());
 
         model.addAttribute("vouchers", voucherService.findWithFilers(new VoucherFilerRequest(), pageable));
-
         model.addAttribute("message", "Successfully ordered voucher!");
 
         return "fragments/voucher-list :: voucher-list-fragment";
     }
 
-    @GetMapping("/user")
-    public String getUserVouchers(Model model,
+    @GetMapping("/user/{id}")
+    @PreAuthorize("@auth.isUserObject(#id)")
+    public String getUserVouchers(@PathVariable String id,
                                   PersonalVoucherFilterRequest filer,
                                   @PageableDefault(size = 10, page = 0) Pageable pageable,
-                                  @AuthenticationPrincipal User user) {
+                                  Model model) {
 
-        filer.setUserId(user.getId());
+        filer.setUserId(UUID.fromString(id));
+
         model.addAttribute("vouchers", voucherService.findAllByUserId(filer, pageable));
 
         return "fragments/voucher-profile-list :: voucher-profile-list-fragment";

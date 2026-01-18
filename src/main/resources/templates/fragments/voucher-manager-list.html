@@ -38,17 +38,21 @@
     </td>
 </tr>
 
-<tr th:fragment="voucher-row-edit(voucher)" th:id="'voucher-row-' + ${voucher.id}">
+<tr th:fragment="voucher-row-edit(voucher)"
+    th:id="'voucher-row-' + ${voucher.id}"
+    th:object="${voucherStatusRequest}">
     <td th:text="${voucher.id}"></td>
     <td th:text="${voucher.title}"></td>
 
     <td>
-        <select name="voucherStatus" class="form-control form-control-sm">
+        <select th:field="*{voucherStatus}" class="form-control form-control-sm"
+                th:classappend="${#fields.hasErrors('voucherStatus')} ? 'is-invalid'">
             <option th:each="status : ${T(com.epam.finaltask.model.VoucherStatus).values()}"
                     th:value="${status}"
                     th:text="${status}"
                     th:selected="${status == voucher.status}">
             </option>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('voucherStatus')}" th:errors="*{voucherStatus}"></div>
         </select>
     </td>
 
@@ -57,8 +61,8 @@
             <input type="checkbox"
                    class="custom-control-input"
                    th:id="'hot-switch-' + ${voucher.id}"
-                   name="isHot"
-                   value="true"
+                   th:field="*{isHot}"
+                   th:value="true"
                    th:checked="${voucher.isHot}">
             <label class="custom-control-label" th:for="'hot-switch-' + ${voucher.id}"></label>
 
