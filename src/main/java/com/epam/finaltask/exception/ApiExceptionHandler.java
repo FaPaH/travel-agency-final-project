@@ -6,6 +6,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -26,137 +27,48 @@ import java.util.List;
 
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE)
+@RequiredArgsConstructor
 @Slf4j
 public class ApiExceptionHandler {
 
-    @ExceptionHandler(DisabledException.class)
-    public ResponseEntity<ErrorResponse> handleDisabledException(
-            DisabledException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.LOCKED).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.LOCKED,
-                ex.getMessage(),
-                null)
-        );
+    @ExceptionHandler({
+            OAuth2AuthenticationException.class,
+            InvalidTokenException.class,
+            BadCredentialsException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(OAuth2AuthenticationException.class)
-    public ResponseEntity<ErrorResponse> handleOAuth2AuthenticationException(
-            OAuth2AuthenticationException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.badRequest().body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage(),
-                null)
-        );
-    }
-
-    @ExceptionHandler(NotEnoughBalanceException.class)
-    public ResponseEntity<ErrorResponse> handleNotEnoughBalance(
-            NotEnoughBalanceException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.NOT_ACCEPTABLE,
-                ex.getMessage(),
-                null)
-        );
-    }
-
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidTokenException(
-            InvalidTokenException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.badRequest().body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage(),
-                null)
-        );
-    }
-
-    @ExceptionHandler(AlreadyInUseException.class)
-    public ResponseEntity<ErrorResponse> handleAlreadyInUseException(
-            AlreadyInUseException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.CONFLICT,
-                ex.getMessage(),
-                null)
-        );
+    @ExceptionHandler({JwtException.class, ExpiredJwtException.class})
+    public ResponseEntity<ErrorResponse> handleUnauthorized(Exception ex, HttpServletRequest request) {
+        String message = (ex instanceof ExpiredJwtException) ? "Token is expired" : "Invalid token";
+        return buildResponse(HttpStatus.UNAUTHORIZED, message, request);
     }
 
     @ExceptionHandler({EntityNotFoundException.class, NoResourceFoundException.class})
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
-            Exception ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.NOT_FOUND,
-                ex.getMessage(),
-                null)
-        );
+    public ResponseEntity<ErrorResponse> handleNotFound(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler({ConversionFailedException.class, InvalidFormatException.class})
-    public ResponseEntity<ErrorResponse> handleConversionFailed(
-            Exception ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                "Conversion error",
-                null)
-        );
+    public ResponseEntity<ErrorResponse> handleUnprocessable(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, "Conversion error", request);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
-            BadCredentialsException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.badRequest().body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage(),
-                null)
-        );
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabled(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.LOCKED, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ErrorResponse> handleJwtException(
-            JwtException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.UNAUTHORIZED,
-                "Invalid token",
-                null)
-        );
+    @ExceptionHandler(NotEnoughBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleBalance(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_ACCEPTABLE, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ErrorResponse> handleExpiredJwt(
-            ExpiredJwtException ex,
-            HttpServletRequest request) {
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.UNAUTHORIZED,
-                "Token is expired",
-                null)
-        );
+    @ExceptionHandler(AlreadyInUseException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(Exception ex, HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -174,41 +86,33 @@ public class ApiExceptionHandler {
                         .build())
                 .toList();
 
-        return ResponseEntity.badRequest().body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.BAD_REQUEST,
-                "Validation error",
-                validationErrors)
-        );
+        return buildResponse(HttpStatus.BAD_REQUEST, "Validation error", request, validationErrors);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(
-            Exception ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleException(Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error in {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
-        log.error("Unexpected in {} with cause = {}",
-                request.getRequestURI(), ex.getCause() != null ? ex.getCause() : "NULL", ex);
-
-        return ResponseEntity.badRequest().body(generateErrorResponse(
-                request.getRequestURI(),
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage(),
-                null)
-        );
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
-    private ErrorResponse generateErrorResponse(String path,
-                                                HttpStatus status,
-                                                String message,
-                                                List<ErrorResponse.ValidationError> validationErrors) {
-        return ErrorResponse.builder()
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, HttpServletRequest request) {
+        return buildResponse(status, message, request, null);
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status,
+                                                        String message,
+                                                        HttpServletRequest request,
+                                                        List<ErrorResponse.ValidationError> errors) {
+        ErrorResponse response = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .statusCode(status.value())
                 .error(status.getReasonPhrase())
                 .message(message)
-                .path(path)
-                .validationErrors(validationErrors)
+                .path(request.getRequestURI())
+                .validationErrors(errors)
                 .build();
+
+        return ResponseEntity.status(status).body(response);
     }
 }

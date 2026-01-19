@@ -40,9 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    @Qualifier("handlerExceptionResolver")
-    private final HandlerExceptionResolver resolver;
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -50,62 +47,52 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        log.info("Starting JWT Authentication Filter");
-
-        final String authHeader = request.getHeader(HEADER_NAME);
-        String jwt = null;
-        final String username;
+        log.debug("Starting JWT Authentication Filter");
 
         try {
+            String jwt = extractJwtFromRequest(request);
 
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                jwt = authHeader.substring(BEARER_PREFIX.length());
-            }
+            if (jwt != null) {
+                String username = jwtUtil.extractUsername(jwt);
 
-            if (request.getCookies() != null) {
-                jwt = Arrays.stream(request.getCookies())
-                        .filter(c -> "jwt_access".equals(c.getName()))
-                        .map(Cookie::getValue)
-                        .findFirst()
-                        .orElse(null);
-            }
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    User user = userMapper.toUser(userService.getUserByUsername(username));
 
-            if (jwt == null) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+                    if (jwtUtil.isTokenValid(jwt, user)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                user.getAuthorities()
+                        );
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            username = jwtUtil.extractUsername(jwt);
-
-            if (!StringUtils.isEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                User user = userMapper.toUser(userService.getUserByUsername(username));
-
-
-                log.info("Logged in user: {}", user);
-
-                if (jwtUtil.isTokenValid(jwt, user)) {
-                    SecurityContext context = SecurityContextHolder.getContext();
-
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            user,
-                            null,
-                            user.getAuthorities()
-                    );
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    context.setAuthentication(authToken);
-                    SecurityContextHolder.setContext(context);
-                } else {
-                    throw new InvalidTokenException("Invalid token");
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        log.debug("User {} successfully authenticated via JWT", username);
+                    }
                 }
-            } else {
-                throw new InvalidTokenException("Invalid token");
             }
-
-            log.info("JWT Authentication Filter Success for username {}", username);
-            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            resolver.resolveException(request, response, null, e);
+            log.warn("JWT validation failed: {}", e.getMessage());
+
+            SecurityContextHolder.clearContext();
         }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String extractJwtFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader(HEADER_NAME);
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            return authHeader.substring(BEARER_PREFIX.length());
+        }
+
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(c -> "jwt_access".equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 }

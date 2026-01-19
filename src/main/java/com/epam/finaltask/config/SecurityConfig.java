@@ -5,6 +5,7 @@ import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.*;
 import com.epam.finaltask.service.impl.CustomOAuth2UserService;
+import com.epam.finaltask.util.HtmxAuthenticationEntryPoint;
 import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -54,6 +55,7 @@ public class SecurityConfig {
     private final UserMapper userMapper;
     private final TokenStorageService<String> refreshTokenStorageService;
     private final JwtProperties jwtProperties;
+    private final HtmxAuthenticationEntryPoint htmxAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -93,6 +95,8 @@ public class SecurityConfig {
                                 .userService(oAuth2UserService)
                         )
                         .successHandler(oAuth2AuthenticationSuccessHandler())
+                ).exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(htmxAuthenticationEntryPoint)
                 );
 
         return http.build();

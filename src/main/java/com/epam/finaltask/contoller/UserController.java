@@ -23,7 +23,7 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public class UserController {
 
-    //TODO: Business logic logging, exception handling, limit failed login attempt, reformating api controllers, localization, tests
+    //TODO: exception handling, limit failed login attempt, reformating api controllers, localization, tests
 
     private final UserService userService;
 
@@ -77,6 +77,7 @@ public class UserController {
     public String balance(@AuthenticationPrincipal User user,
                           @PathVariable String id,
                           Model model) {
+
         UserDTO userDto = userService.getUserById(user.getId());
 
         model.addAttribute("topup", new TopUpRequest());
@@ -86,17 +87,23 @@ public class UserController {
     }
 
     @PostMapping("/profile/{id}/balance/top-up")
-    @PreAuthorize("@auth.isUserObject(#topUpRequest.id)")
-    public String updateBalance(@ModelAttribute("topup") @Valid TopUpRequest topUpRequest,
+    @PreAuthorize("@auth.isUserObject(#id)")
+    public String updateBalance(@PathVariable String id,
+                                @ModelAttribute("topup") @Valid TopUpRequest topUpRequest,
                                 BindingResult bindingResult,
                                 HttpServletResponse response,
                                 Model model) {
         if (bindingResult.hasErrors()) {
+            UserDTO userDto = userService.getUserById(UUID.fromString(id));
+
+            model.addAttribute("user", userDto);
+
             response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+
             return "fragments/user-profile :: profile-balance-fragment";
         }
 
-        UserDTO userDto = userService.changeBalance(topUpRequest.getId(), topUpRequest.getAmount());
+        UserDTO userDto = userService.changeBalance(id, topUpRequest.getAmount());
 
         model.addAttribute("user", userDto);
 
