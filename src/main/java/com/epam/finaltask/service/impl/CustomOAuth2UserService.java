@@ -1,4 +1,4 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.model.AuthProvider;
 import com.epam.finaltask.model.Role;

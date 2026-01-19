@@ -1,4 +1,4 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.dto.*;
 import com.epam.finaltask.exception.AlreadyInUseException;
@@ -9,14 +9,15 @@ import com.epam.finaltask.model.*;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.repository.VoucherRepository;
 import com.epam.finaltask.repository.specification.VoucherSpecifications;
+import com.epam.finaltask.service.TokenStorageService;
+import com.epam.finaltask.service.VoucherService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +27,17 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class VoucherServiceImpl implements VoucherService {
 
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
     private final UserRepository userRepository;
     private final TokenStorageService<VoucherPaginatedResponse> voucherPageStorage;
+    private final TokenStorageService<UserDTO> userTokenStorageService;
 
     @Override
     public VoucherDTO create(VoucherDTO voucherDTO) {
-
         voucherPageStorage.clearAll();
 
         return voucherMapper.toVoucherDTO(voucherRepository.save(voucherMapper.toVoucher(voucherDTO)));
@@ -43,7 +45,6 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public VoucherDTO order(String id, String userId) {
-
         Voucher voucher = voucherRepository.findById(UUID.fromString(id)).orElseThrow(
                 () -> new EntityNotFoundException("Voucher not found")
         );
@@ -56,12 +57,22 @@ public class VoucherServiceImpl implements VoucherService {
             throw new AlreadyInUseException("Voucher already taken");
         }
 
-        if (user.getBalance().subtract(voucher.getPrice()).compareTo(BigDecimal.ZERO) < 0) {
+        log.info("Processing payment operation from user {} with voucher {}", userId, voucher);
+
+        BigDecimal newBalance = user.getBalance().subtract(voucher.getPrice());
+
+        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
             throw new NotEnoughBalanceException("Not enough balance");
         }
 
+        user.setBalance(newBalance);
+        userRepository.save(user);
+        userTokenStorageService.revoke(user.getId().toString());
+
         voucher.setUser(user);
         voucher.setStatus(VoucherStatus.REGISTERED);
+
+        log.info("Successful payment operation, new user {} balance: {}", userId, user.getBalance());
 
         voucherPageStorage.clearAll();
 
@@ -111,30 +122,32 @@ public class VoucherServiceImpl implements VoucherService {
             User user = voucher.getUser();
 
             if (statusRequest.getVoucherStatus() != null) {
-                System.out.println("STATUS IS NOT NULL");
                 switch (VoucherStatus.valueOf(statusRequest.getVoucherStatus())) {
-                    case PAID:
-                        System.out.println("CASE PAID " + user);
-                        BigDecimal newBalance = user.getBalance().subtract(voucher.getPrice());
+                    case CREATED:
+                        voucher.setUser(null);
+                        voucherRepository.save(voucher);
 
-                        System.out.println("NEW BALANCE " + newBalance);
-                        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-                            throw new NotEnoughBalanceException("Not enough balance");
-                        }
-
-                        user.setBalance(newBalance);
-                        System.out.println("NEW USER BALANCE " + user.getBalance());
-                        userRepository.save(user);
                         break;
-
+//                    case PAID:
+//                        BigDecimal newBalance = user.getBalance().subtract(voucher.getPrice());
+//
+//                        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+//                            throw new NotEnoughBalanceException("Not enough balance");
+//                        }
+//
+//                        user.setBalance(newBalance);
+//                        userRepository.save(user);
+//
+//                        break;
                     case CANCELED:
                         user.setBalance(user.getBalance().add(voucher.getPrice()));
                         userRepository.save(user);
-                        break;
 
+                        break;
                 }
                 voucher.setStatus(VoucherStatus.valueOf(statusRequest.getVoucherStatus()));
             }
+
             if (statusRequest.getIsHot() != null) {
                 voucher.setIsHot(statusRequest.getIsHot());
             }
@@ -149,7 +162,6 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public VoucherPaginatedResponse findAllByUserId(PersonalVoucherFilterRequest filterRequest, Pageable pageable) {
-
         boolean isDefaultRequest = isFilterEmpty(filterRequest);
 
         String cacheKey = String.format("user_vouchers_id%s_p%d",
@@ -175,11 +187,6 @@ public class VoucherServiceImpl implements VoucherService {
     }
     @Override
     public VoucherPaginatedResponse findWithFilers(VoucherFilerRequest voucherFilerRequest, Pageable pageable) {
-
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        boolean isAdmin = auth != null && auth.getAuthorities().stream()
-//                .anyMatch(a -> a.getAuthority().equals("ADMIN") || a.getAuthority().equals("MANAGER"));
-
         boolean isDefaultRequest = isFilterEmpty(voucherFilerRequest);
 
         String cacheKey = String.format("vouchers_p%d_s%d",

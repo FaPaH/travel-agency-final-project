@@ -1,4 +1,4 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.dto.*;
 import com.epam.finaltask.exception.InvalidTokenException;
@@ -7,6 +7,10 @@ import com.epam.finaltask.model.AuthProvider;
 import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
+import com.epam.finaltask.service.AuthenticationService;
+import com.epam.finaltask.service.ResetService;
+import com.epam.finaltask.service.TokenStorageService;
+import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,10 +1,13 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.model.ResetToken;
+import com.epam.finaltask.service.MailService;
+import com.epam.finaltask.service.ResetService;
+import com.epam.finaltask.service.TokenStorageService;
+import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.ResetTokenUtil;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

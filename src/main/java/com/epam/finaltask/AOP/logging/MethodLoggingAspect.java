@@ -22,7 +22,7 @@ public class MethodLoggingAspect {
     @Pointcut("@within(org.springframework.stereotype.Service)")
     public void serviceMethods() {}
 
-    @Pointcut("execution(* com.epam.finaltask.service.AbstractTokenStorage.*(..))")
+    @Pointcut("execution(* com.epam.finaltask.service.impl.AbstractTokenStorage.*(..))")
     public void tokenStorageMethod() {}
 
     @Pointcut("execution(* com.epam.finaltask.util.JwtUtil.*(..)) || execution(* com.epam.finaltask.util.ResetTokenUtil.*(..))")

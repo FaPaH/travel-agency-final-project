@@ -23,6 +23,8 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public class UserController {
 
+    //TODO: Business logic logging, exception handling, limit failed login attempt, reformating api controllers, localization, tests
+
     private final UserService userService;
 
     @GetMapping("/dashboard")
@@ -34,7 +36,6 @@ public class UserController {
     @PreAuthorize("@auth.isUserObject(#id)")
     public String profile(@PathVariable String id,
                           Model model) {
-
         UserDTO userDto = userService.getUserById(UUID.fromString(id));
 
         model.addAttribute("user", userDto);
@@ -46,7 +47,6 @@ public class UserController {
     @PreAuthorize("@auth.isUserObject(#id)")
     public String editProfile(@PathVariable String id,
                               Model model) {
-
         UserDTO userDto = userService.getUserById(UUID.fromString(id));
 
         model.addAttribute("user", userDto);
@@ -60,7 +60,6 @@ public class UserController {
                                 BindingResult bindingResult,
                                 HttpServletResponse response,
                                 Model model) {
-
         if (bindingResult.hasErrors()) {
             response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
             return "fragments/user-profile :: profile-edit-fragment";
@@ -78,7 +77,6 @@ public class UserController {
     public String balance(@AuthenticationPrincipal User user,
                           @PathVariable String id,
                           Model model) {
-
         UserDTO userDto = userService.getUserById(user.getId());
 
         model.addAttribute("topup", new TopUpRequest());
@@ -93,7 +91,6 @@ public class UserController {
                                 BindingResult bindingResult,
                                 HttpServletResponse response,
                                 Model model) {
-
         if (bindingResult.hasErrors()) {
             response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
             return "fragments/user-profile :: profile-balance-fragment";

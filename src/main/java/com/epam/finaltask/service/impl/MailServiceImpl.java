@@ -1,5 +1,6 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
+import com.epam.finaltask.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

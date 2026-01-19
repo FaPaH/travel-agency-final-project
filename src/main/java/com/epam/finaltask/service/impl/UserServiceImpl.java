@@ -1,23 +1,19 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.dto.PaginatedResponse;
 import com.epam.finaltask.dto.UserDTO;
-import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.exception.AlreadyInUseException;
 import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
-import com.epam.finaltask.model.VoucherPaginatedResponse;
 import com.epam.finaltask.repository.UserRepository;
+import com.epam.finaltask.service.TokenStorageService;
+import com.epam.finaltask.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -4,7 +4,7 @@ import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.model.CacheType;
 import com.epam.finaltask.model.ResetToken;
 import com.epam.finaltask.model.VoucherPaginatedResponse;
-import com.epam.finaltask.service.AbstractTokenStorage;
+import com.epam.finaltask.service.impl.AbstractTokenStorage;
 import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.util.JwtProperties;
 import com.github.benmanes.caffeine.cache.Caffeine;
