@@ -41,10 +41,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserMapper userMapper;
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
         log.debug("Starting JWT Authentication Filter");

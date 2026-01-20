@@ -2,20 +2,25 @@ package com.epam.finaltask.contoller;
 
 import com.epam.finaltask.dto.*;
 import com.epam.finaltask.model.User;
+import com.epam.finaltask.service.AttemptService;
 import com.epam.finaltask.service.AuthenticationService;
 import com.epam.finaltask.service.ResetService;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtProperties;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/auth")
@@ -26,9 +31,16 @@ public class AuthenticationController {
     private final ResetService resetService;
     private final JwtProperties jwtProperties;
     private final UserService userService;
+    private final AttemptService attemptService;
 
     @GetMapping("/sign-in")
-    public String signIn(@ModelAttribute("loginRequest") LoginRequest loginRequest) {
+    public String signIn(@RequestParam(value = "error", required = false) String error,
+                         @ModelAttribute("loginRequest") LoginRequest loginRequest,
+                         Model model) {
+        if (error != null) {
+            model.addAttribute("errorMessage", error);
+        }
+
         return "auth/sign-in";
     }
 
@@ -59,6 +71,7 @@ public class AuthenticationController {
     @PostMapping("/perform_login")
     public String login(@ModelAttribute("loginRequest") @Valid LoginRequest loginRequest,
                         HttpServletResponse response,
+                        HttpServletRequest request,
                         BindingResult bindingResult,
                         Model model) {
 
@@ -67,12 +80,21 @@ public class AuthenticationController {
             return "auth/sign-in :: login-form";
         }
 
-        AuthResponse authResponse = authenticationService.login(loginRequest);
+        try {
+            AuthResponse authResponse = authenticationService.login(loginRequest);
 
-        saveTokensToCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
+            attemptService.clearBlocked(getClientIP(request));
 
-        response.setHeader("HX-Redirect", "/index");
-        return null;
+            saveTokensToCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
+            response.setHeader("HX-Redirect", "/index");
+            return null;
+
+        } catch (AuthenticationException e) {
+            String ip = getClientIP(request);
+            attemptService.track(ip);
+
+            throw e;
+        }
     }
 
     @GetMapping("/reset-password-form")
@@ -191,5 +213,11 @@ public class AuthenticationController {
 
         response.addCookie(aCookie);
         response.addCookie(rCookie);
+    }
+
+    private String getClientIP(HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader("X-Forwarded-For"))
+                .map(h -> h.split(",")[0].trim())
+                .orElse(request.getRemoteAddr());
     }
 }

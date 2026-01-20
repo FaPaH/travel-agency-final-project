@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,22 +40,23 @@ public class UIExceptionHandler {
             OAuth2AuthenticationException.class,
             ConversionFailedException.class,
             InvalidFormatException.class,
-            InternalAuthenticationServiceException.class
+            InternalAuthenticationServiceException.class,
+            AuthenticationException.class
     })
     public String handleBusinessExceptions(Exception ex,
                                            HttpServletRequest request,
                                            HttpServletResponse response,
                                            Model model) {
 
-        HttpStatus status = getStatusForException(ex);
-
         String message = ex.getMessage();
 
-        if (ex instanceof InternalAuthenticationServiceException) {
+        if (ex instanceof AuthenticationException) {
             message = "Invalid username or password";
         }
 
-        return returnErrorAlert(new Exception(message), request, response, model, status);
+        HttpStatus status = getStatusForException(ex);
+
+        return returnErrorAlert(message, request, response, model, status);
     }
 
     @ExceptionHandler({JwtException.class, ExpiredJwtException.class})
@@ -62,7 +64,7 @@ public class UIExceptionHandler {
                                       HttpServletRequest request,
                                       HttpServletResponse response,
                                       Model model) {
-        return returnErrorAlert(ex, request, response, model, HttpStatus.UNAUTHORIZED);
+        return returnErrorAlert(ex.getMessage(), request, response, model, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler({EntityNotFoundException.class, NoResourceFoundException.class})
@@ -70,7 +72,7 @@ public class UIExceptionHandler {
                                            HttpServletRequest request,
                                            HttpServletResponse response,
                                            Model model) {
-        return returnErrorAlert(ex, request, response, model, HttpStatus.NOT_FOUND);
+        return returnErrorAlert(ex.getMessage(), request, response, model, HttpStatus.NOT_FOUND);
 
 //        ErrorResponse errorResponse = generateErrorResponse(request.getRequestURI(), HttpStatus.NOT_FOUND, ex.getMessage(), null);
 //        model.addAttribute("errorResponse", errorResponse);
@@ -137,7 +139,7 @@ public class UIExceptionHandler {
         return "error/500";
     }
 
-    private String returnErrorAlert(Exception ex,
+    private String returnErrorAlert(String message,
                                     HttpServletRequest request,
                                     HttpServletResponse response,
                                     Model model,
@@ -146,7 +148,7 @@ public class UIExceptionHandler {
         ErrorResponse errorResponse = generateErrorResponse(
                 request.getRequestURI(),
                 status,
-                ex.getMessage(),
+                message,
                 null);
 
         model.addAttribute("errorResponse", errorResponse);
@@ -160,14 +162,15 @@ public class UIExceptionHandler {
     }
 
     private HttpStatus getStatusForException(Exception ex) {
-        if (ex instanceof DisabledException) return HttpStatus.LOCKED; // 423
-        if (ex instanceof NotEnoughBalanceException) return HttpStatus.NOT_ACCEPTABLE; // 406
-        if (ex instanceof AlreadyInUseException) return HttpStatus.CONFLICT; // 409
-        if (ex instanceof BadCredentialsException) return HttpStatus.BAD_REQUEST; // 400
-        if (ex instanceof OAuth2AuthenticationException) return HttpStatus.BAD_REQUEST; // 400
-        if (ex instanceof InvalidTokenException) return HttpStatus.BAD_REQUEST; // 400
-        if (ex instanceof ConversionFailedException) return HttpStatus.UNPROCESSABLE_ENTITY; // 422
-        if (ex instanceof InvalidFormatException) return HttpStatus.UNPROCESSABLE_ENTITY; // 422
+        if (ex instanceof DisabledException) return HttpStatus.LOCKED;
+        if (ex instanceof NotEnoughBalanceException) return HttpStatus.NOT_ACCEPTABLE;
+        if (ex instanceof AlreadyInUseException) return HttpStatus.CONFLICT;
+        if (ex instanceof BadCredentialsException) return HttpStatus.BAD_REQUEST;
+        if (ex instanceof OAuth2AuthenticationException) return HttpStatus.BAD_REQUEST;
+        if (ex instanceof InvalidTokenException) return HttpStatus.BAD_REQUEST;
+        if (ex instanceof ConversionFailedException) return HttpStatus.UNPROCESSABLE_ENTITY;
+        if (ex instanceof InvalidFormatException) return HttpStatus.UNPROCESSABLE_ENTITY;
+        if (ex instanceof AuthenticationException) return HttpStatus.UNAUTHORIZED;
 
         return HttpStatus.BAD_REQUEST;
     }

@@ -13,6 +13,7 @@ import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;

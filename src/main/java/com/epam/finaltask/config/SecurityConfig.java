@@ -1,6 +1,7 @@
 package com.epam.finaltask.config;
 
 import com.epam.finaltask.filter.JwtAuthenticationFilter;
+import com.epam.finaltask.filter.LoginAttemptFilter;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.*;
@@ -48,6 +49,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final LoginAttemptFilter loginAttemptFilter;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final CustomOAuth2UserService oAuth2UserService;
@@ -79,6 +81,7 @@ public class SecurityConfig {
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(loginAttemptFilter, JwtAuthenticationFilter.class)
                 .formLogin(form -> form
                         .loginPage("/auth/sign-in")
                         .loginProcessingUrl("/auth/login-security-check")

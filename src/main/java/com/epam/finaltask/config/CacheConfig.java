@@ -42,12 +42,17 @@ public class CacheConfig {
 
     @Bean
     public TokenStorageService<VoucherPaginatedResponse> voucherPagesStorage() {
-        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, VoucherPaginatedResponse.class) {};
+        return new AbstractTokenStorage<>(cacheManager(), VOUCHER_PAGES, VoucherPaginatedResponse.class) {};
     }
 
     @Bean
     public TokenStorageService<UserDTO> userProfilesStorage() {
-        return new AbstractTokenStorage<>(cacheManager(), RESET_TOKENS, UserDTO.class) {};
+        return new AbstractTokenStorage<>(cacheManager(), USER_PROFILES, UserDTO.class) {};
+    }
+
+    @Bean
+    public TokenStorageService<Integer> failedAttemptsStorage() {
+        return new AbstractTokenStorage<>(cacheManager(), FAILED_ATTEMPTS, Integer.class) {};
     }
 
     @Bean
@@ -76,8 +81,6 @@ public class CacheConfig {
     private Duration resolveTtl(CacheType type) {
         if (type == CacheType.REFRESH_TOKENS) {
             return Duration.ofSeconds(jwtProperties.getRefreshToken().getExpiration());
-        } else if (type == CacheType.RESET_TOKENS) {
-            return Duration.ofSeconds(jwtProperties.getExpiration());
         }
         return type.getTtl();
     }
