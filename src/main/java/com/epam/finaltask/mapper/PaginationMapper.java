@@ -23,6 +23,7 @@ public class PaginationMapper {
         response.setPageSize(page.getSize());
         response.setHasNext(page.hasNext());
         response.setHasPrevious(page.hasPrevious());
+        response.setSort(page.getSort());
         return response;
     }
 }

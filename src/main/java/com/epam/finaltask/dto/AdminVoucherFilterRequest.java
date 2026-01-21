@@ -15,7 +15,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class AdminVoucherFilterRequest extends VoucherFilerRequest {
 
-    private UUID voucherId;
+    private String voucherId;
     private String title;
     private List<VoucherStatus> statuses;
     private Boolean isHot;

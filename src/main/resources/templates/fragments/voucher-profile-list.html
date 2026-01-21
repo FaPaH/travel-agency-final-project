@@ -2,10 +2,10 @@
     <table class="table table-bordered">
         <thead>
         <tr>
-            <th scope="col">#ID</th>
-            <th scope="col">Voucher Title</th>
-            <th scope="col">Description</th>
-            <th scope="col">Status</th>
+            <th scope="col" th:text="#{common.id}">#ID</th>
+            <th scope="col" th:text="#{voucher.title}">Voucher Title</th>
+            <th scope="col" th:text="#{common.description}">Description</th>
+            <th scope="col" th:text="#{common.status}">Status</th>
         </tr>
         </thead>
         <tbody>
@@ -17,7 +17,7 @@
             <td th:text="${voucher.status}"></td>
         </tr>
         <tr th:if="${#lists.isEmpty(vouchers.getData())}">
-            <td colspan="3">There is no vouchers</td>
+            <td colspan="3" th:text="#{voucher.not_found}">There is no vouchers</td>
         </tr>
         </tbody>
     </table>

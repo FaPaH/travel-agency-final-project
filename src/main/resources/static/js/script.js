@@ -19,19 +19,23 @@ function checkPasswordMatch(input) {
     }
 }
 
-function copyTraceId() {
-    const copyText = document.getElementById("traceIdInput");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(copyText.value);
+function copyToClipBoard(btnElement) {
+    const idToCopy = btnElement.getAttribute("data-id");
 
-    const btn = document.querySelector('button[onclick="copyTraceId()"]');
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-check"></i> Copied';
-    btn.classList.replace('btn-outline-secondary', 'btn-success');
+    navigator.clipboard.writeText(idToCopy).then(() => {
 
-    setTimeout(() => {
-        btn.innerHTML = originalHtml;
-        btn.classList.replace('btn-success', 'btn-outline-secondary');
-    }, 2000);
+        const originalHtml = btnElement.innerHTML;
+        const originalClass = 'btn-outline-secondary';
+        const successClass = 'btn-success';
+
+        btnElement.innerHTML = '<i class="fas fa-check"></i>';
+        btnElement.classList.replace(originalClass, successClass);
+
+        setTimeout(() => {
+            btnElement.innerHTML = originalHtml;
+            btnElement.classList.replace(successClass, originalClass);
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
 }

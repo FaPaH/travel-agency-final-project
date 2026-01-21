@@ -76,7 +76,7 @@
 .error-code {
     font-size: 6rem;
     font-weight: 700;
-    color: #dc3545; /* Red color */
+    color: #dc3545;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 .trace-box {
@@ -86,6 +86,39 @@
     font-family: monospace;
     font-size: 0.9rem;
     position: relative;
+}
+
+.table-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.truncate-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.truncate-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.truncate-cell.expanded {
+    white-space: normal;
+    overflow: visible;
+    word-wrap: break-word;
+}
+
+.id-hover-container .copy-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    visibility: hidden;
+}
+.id-hover-container:hover .copy-btn {
+    opacity: 1;
+    visibility: visible;
 }
 
 .layout { display: flex; min-height: 100vh; }

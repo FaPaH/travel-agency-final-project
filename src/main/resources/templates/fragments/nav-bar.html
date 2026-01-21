@@ -1,56 +1,60 @@
 <nav th:fragment="nav-bar-fragment" class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/index}">Travel Agency</a>
+        <a class="navbar-brand" th:href="@{/index}" th:text="#{nav.brand}">Travel Agency</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/index}">Home</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/index}" th:text="#{nav.home}">Home</a>
                 </li>
                 <li sec:authorize="isAuthenticated()" class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/user/dashboard}">Profile</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/user/dashboard}" th:text="#{nav.profile}">Profile</a>
                 </li>
                 <li sec:authorize="hasAnyRole('MANAGER', 'ADMIN')" class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/manager/dashboard}">Manager</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/manager/dashboard}" th:text="#{nav.manager}">Manager</a>
                 </li>
                 <li sec:authorize="hasRole('ADMIN')" class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/admin/dashboard}">Admin</a>
+                    <a class="nav-link active" aria-current="page" th:href="@{/admin/dashboard}" th:text="#{nav.admin}">Admin</a>
                 </li>
             </ul>
 
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button"
-                   data-bs-toggle="dropdown" aria-expanded="false">
+            <div class="d-flex align-items-center ms-auto">
 
-                    <i class="fas fa-globe me-1"></i>
-                    <span th:text="${#locale.language.toUpperCase()}">EN</span>
-                </a>
+                <ul class="navbar-nav me-3"> <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-globe me-1"></i>
+                        <span th:text="${#locale.language.toUpperCase()}">EN</span>
+                    </a>
 
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                    <li>
-                        <a class="dropdown-item" th:href="@{''(lang='en')}"
-                           th:classappend="${#locale.language == 'en'} ? 'active' : ''">
-                            English
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item" th:href="@{''(lang='ukr')}"
-                           th:classappend="${#locale.language == 'ukr'} ? 'active' : ''">
-                            Українська
-                        </a>
-                    </li>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                        <li>
+                            <a class="dropdown-item" th:href="@{''(lang='en')}"
+                               th:classappend="${#locale.language == 'en'} ? 'active' : ''">
+                                English
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{''(lang='ukr')}"
+                               th:classappend="${#locale.language == 'ukr'} ? 'active' : ''">
+                                Українська
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 </ul>
-            </li>
 
-            <nav class="navbar navbar-light bg-light">
-                <form sec:authorize="isAnonymous()" class="container-fluid justify-content-start">
-                    <a th:href="@{/auth/sign-in}" class="btn btn-outline-success me-2">Sign in</a>
-                    <a th:href="@{/auth/sign-up}" class="btn btn-sm btn-outline-secondary" type="button">Sign up</a>
-                </form>
-            </nav>
+                <div sec:authorize="isAnonymous()">
+                    <a th:href="@{/auth/sign-in}" class="btn btn-outline-success me-2" th:text="#{nav.signin}">Sign in</a>
+                    <a th:href="@{/auth/sign-up}" class="btn btn-sm btn-outline-secondary" type="button" th:text="#{nav.signup}">Sign up</a>
+                </div>
+
+            </div>
+
         </div>
     </div>
 </nav>

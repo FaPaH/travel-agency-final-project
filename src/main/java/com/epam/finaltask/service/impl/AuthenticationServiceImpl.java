@@ -52,6 +52,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthResponse register(RegisterRequest registerRequest) {
         User user = User.builder()
                 .username(registerRequest.getUsername())
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
                 .email(registerRequest.getEmail())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .role(Role.USER)

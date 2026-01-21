@@ -1,19 +1,19 @@
 <div th:fragment="user-list-fragment" id="user-admin-list" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-        <h3>User Management</h3>
+        <h3 th:text="#{user.management}">User Management</h3>
     </div>
 
     <table class="table table-hover table-bordered shadow-sm bg-white">
         <thead class="thead-dark">
         <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Status</th>
-            <th>First/Last name</th>
-            <th>Contacts</th>
-            <th>Balance</th>
-            <th>Provider</th>
-            <th>Actions</th>
+            <th th:text="#{common.id}">ID</th>
+            <th th:text="#{auth.username}">Username</th>
+            <th th:text="#{common.status}">Status</th>
+            <th th:text="#{user.firstname} + '/' + #{user.lastname}">First/Last name</th>
+            <th th:text="#{user.contacts}">Contacts</th>
+            <th th:text="#{user.balance}">Balance</th>
+            <th th:text="#{user.provider}">Provider</th>
+            <th th:text="#{common.actions}">Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -42,8 +42,8 @@
     <td class="small" th:text="${user.id}"></td>
     <td class="font-weight-bold" th:text="${user.username}"></td>
     <td>
-        <span th:class="${user.active ? 'badge badge-success' : 'badge badge-danger'}"
-              th:text="${user.active ? 'Active' : 'Blocked'}">
+        <span th:class="${user.active ? 'badge bg-success' : 'badge bg-danger'}"
+              th:text="${user.active} ? #{user.active} : #{user.blocked}">
         </span>
     </td>
     <td th:text="${user.firstName + ' ' + user.lastName}"></td>
@@ -56,12 +56,11 @@
     <td>
         <button type="button"
                 th:class="${user.active ? 'btn btn-sm btn-danger w-100' : 'btn btn-sm btn-success w-100'}"
-                th:text="${user.active ? 'Block' : 'Unblock'}"
+                th:text="${user.active} ? #{user.block} : #{user.unblock}"
                 th:attr="hx-post=@{/admin/users/toggle-status}"
                 hx-include="closest tr"
                 hx-target="#user-admin-list"
-                hx-swap="outerHTML"
-                th:hx-confirm="${user.active ? 'Block user ' + user.username + '?' : 'Unblock user ' + user.username + '?'}">
+                hx-swap="outerHTML">
         </button>
     </td>
 </tr>

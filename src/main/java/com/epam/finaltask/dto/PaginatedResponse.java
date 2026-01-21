@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -20,4 +21,5 @@ public class PaginatedResponse<T> {
     private int pageSize;
     private boolean hasNext;
     private boolean hasPrevious;
+    private Sort sort;
 }

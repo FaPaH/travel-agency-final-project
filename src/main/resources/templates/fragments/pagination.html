@@ -5,8 +5,9 @@
             <button th:if="${v.currentPage > 0}"
                     class="btn btn-sm btn-outline-secondary"
                     th:attr="hx-get=@{|${baseUrl}|(page=${v.currentPage - 1})}"
-                    hx-include="form"
-                    hx-target="#voucher-list">
+                    hx-include="#combined-filter"
+                    hx-target="#voucher-list"
+                    th:text="'&larr; ' + #{common.back}">
                 &larr; Back
             </button>
             <div th:unless="${v.currentPage > 0}" style="width: 1px;"></div>
@@ -21,7 +22,7 @@
                style="cursor: pointer; font-weight: 500;"
                th:attr="hx-get=@{|${baseUrl}|(page=${i - 1})}"
                th:text="${i}"
-               hx-include="form"
+               hx-include="#combined-filter"
                hx-target="#voucher-list">
             </a>
 
@@ -39,8 +40,9 @@
             <button th:if="${v.currentPage + 1 < v.totalPages}"
                     class="btn btn-sm btn-outline-secondary"
                     th:attr="hx-get=@{|${baseUrl}|(page=${v.currentPage + 1})}"
-                    hx-include="form"
-                    hx-target="#voucher-list">
+                    hx-include="#combined-filter"
+                    hx-target="#voucher-list"
+                    th:text="#{common.next} + ' &rarr;'">
                 Next &rarr;
             </button>
             <div th:unless="${v.currentPage + 1 < v.totalPages}" style="width: 1px;"></div>

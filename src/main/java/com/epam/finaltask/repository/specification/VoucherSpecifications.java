@@ -7,6 +7,7 @@ import com.epam.finaltask.model.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public class VoucherSpecifications {
 
-    public static Specification<Voucher> withFilters(VoucherFilerRequest filter) {
+    public static Specification<Voucher> withFilters(VoucherFilerRequest filter, Pageable pageable) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -22,20 +23,27 @@ public class VoucherSpecifications {
                 if (personalFilter.getStatuses() != null && !personalFilter.getStatuses().isEmpty()) {
                     predicates.add(root.get("status").in(personalFilter.getStatuses()));
                 }
-                if (personalFilter.getUserId() != null && !personalFilter.getUserId().toString().isEmpty()) {
+                if (personalFilter.getUserId() != null) {
                     predicates.add(cb.equal(root.get("user").get("id"), personalFilter.getUserId()));
                 }
-                query.orderBy(
-                        cb.desc(root.get("updatedAt")),
-                        cb.asc(root.get("status")),
-                        cb.asc(root.get("title"))
-                );
+
+                if (pageable == null || pageable.getSort().isUnsorted()) {
+                    query.orderBy(
+                            cb.desc(root.get("updatedAt")),
+                            cb.asc(root.get("status")),
+                            cb.asc(root.get("title"))
+                    );
+                }
+
             } else if (filter instanceof AdminVoucherFilterRequest adminFilter) {
                 if (adminFilter.getStatuses() != null && !adminFilter.getStatuses().isEmpty()) {
                     predicates.add(root.get("status").in(adminFilter.getStatuses()));
                 }
                 if (adminFilter.getVoucherId() != null) {
-                    predicates.add(cb.equal(root.get("id"), adminFilter.getVoucherId()));
+                    predicates.add(cb.like(
+                            cb.lower(root.get("id").as(String.class)),
+                            "%" + adminFilter.getVoucherId().toLowerCase() + "%"
+                    ));
                 }
                 if (adminFilter.getIsHot() != null) {
                     predicates.add(cb.equal(root.get("isHot"), adminFilter.getIsHot()));
@@ -46,23 +54,27 @@ public class VoucherSpecifications {
                             "%" + adminFilter.getTitle().toLowerCase() + "%"
                     ));
                 }
-                if (!predicates.isEmpty()) {
-                    predicates.add(cb.or(predicates.toArray(new Predicate[0])));
+
+                if (pageable == null || pageable.getSort().isUnsorted()) {
+                    query.orderBy(
+                            cb.desc(root.get("isHot")),
+                            cb.asc(root.get("status")),
+                            cb.asc(root.get("title")),
+                            cb.desc(root.get("updatedAt"))
+                    );
                 }
-                query.orderBy(
-                        cb.desc(root.get("isHot")),
-                        cb.asc(root.get("status")),
-                        cb.asc(root.get("title")),
-                        cb.desc(root.get("updatedAt"))
-                );
+
             } else {
+
                 predicates.add(cb.equal(root.get("status"), VoucherStatus.CREATED));
 
-                query.orderBy(
-                        cb.desc(root.get("isHot")),
-                        cb.desc(root.get("createdAt")),
-                        cb.asc(root.get("title"))
-                );
+                if (pageable == null || pageable.getSort().isUnsorted()) {
+                    query.orderBy(
+                            cb.desc(root.get("isHot")),
+                            cb.desc(root.get("createdAt")),
+                            cb.asc(root.get("title"))
+                    );
+                }
             }
 
             addCommonPredicates(predicates, root, cb, filter);
