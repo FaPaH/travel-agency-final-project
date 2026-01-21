@@ -31,6 +31,8 @@ import java.util.UUID;
 @Slf4j
 public class VoucherServiceImpl implements VoucherService {
 
+    //TODO: integrate exceptions which are not in the ex handlers
+
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;
     private final UserRepository userRepository;

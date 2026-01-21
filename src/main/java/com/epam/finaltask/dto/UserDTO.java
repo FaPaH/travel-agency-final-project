@@ -8,6 +8,8 @@ import com.epam.finaltask.model.Voucher;
 
 import com.epam.finaltask.model.VoucherStatus;
 import com.epam.finaltask.validation.annotation.EnumValidator;
+import com.epam.finaltask.validation.annotation.UniqueEmail;
+import com.epam.finaltask.validation.annotation.UniqueUsername;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -22,6 +24,7 @@ public class UserDTO {
 
 	@NotBlank(message = "{validation.auth.username.required}")
 	@Size(min = 2, max = 16, message = "{validation.user.username.size}")
+	@UniqueUsername(message = "{validation.username.exists}")
 	private String username;
 
 	@Pattern(regexp = "^$|^(?=.{2,16}$)[a-zA-Zа-яА-Я]+(?:[\\s'-][a-zA-Zа-яА-Я]+)*$",
@@ -45,6 +48,7 @@ public class UserDTO {
 	@Pattern(regexp = "^$|^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,10}$",
 			flags = Pattern.Flag.CASE_INSENSITIVE,
 			message = "{validation.user.email.format}")
+	@UniqueEmail(message = "{validation.email.exists}")
 	private String email;
 
 	@Builder.Default

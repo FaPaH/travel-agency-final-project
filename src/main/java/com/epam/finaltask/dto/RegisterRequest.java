@@ -1,5 +1,7 @@
 package com.epam.finaltask.dto;
 
+import com.epam.finaltask.validation.annotation.UniqueEmail;
+import com.epam.finaltask.validation.annotation.UniqueUsername;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -10,6 +12,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "{validation.auth.username.required}")
     @Size(min = 2, max = 16, message = "{validation.user.username.size}")
+    @UniqueUsername(message = "{validation.username.exists}")
     private String username;
 
     @NotBlank(message = "{validation.auth.password.required}")
@@ -44,5 +47,6 @@ public class RegisterRequest {
     @Pattern(regexp = "^$|^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,10}$",
             flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "{validation.user.email.format}")
+    @UniqueEmail(message = "{validation.email.exists}")
     private String email;
 }
