@@ -11,8 +11,8 @@ public class PaginationMapper {
         return fill(page, new PaginatedResponse<>());
     }
 
-    public static VoucherPaginatedResponse toVoucherResponse(Page<VoucherDTO> page) {
-        return fill(page, new VoucherPaginatedResponse());
+    public static VoucherPaginatedResponse toVoucherResponse(Page<VoucherDTO> page, Object filter) {
+        return fill(page, new VoucherPaginatedResponse(), filter);
     }
 
     private static <T, R extends PaginatedResponse<T>> R fill(Page<T> page, R response) {
@@ -23,7 +23,14 @@ public class PaginationMapper {
         response.setPageSize(page.getSize());
         response.setHasNext(page.hasNext());
         response.setHasPrevious(page.hasPrevious());
-        response.setSort(page.getSort());
+        return response;
+    }
+
+    public static <T, R extends PaginatedResponse<T>> R fill(Page<T> page, R response, Object filter) {
+        fill(page, response);
+
+        response.setFilter(filter);
+
         return response;
     }
 }

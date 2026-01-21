@@ -21,5 +21,5 @@ public class PaginatedResponse<T> {
     private int pageSize;
     private boolean hasNext;
     private boolean hasPrevious;
-    private Sort sort;
+    private Object filter;
 }

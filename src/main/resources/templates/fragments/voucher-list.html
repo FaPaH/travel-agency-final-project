@@ -1,5 +1,10 @@
 <div th:fragment="voucher-list-fragment" id="voucher-list">
 
+    <div hx-swap-oob="true" id="sort-inputs-container">
+        <input type="hidden" name="sortField" th:value="${vouchers.filter?.sortField}">
+        <input type="hidden" name="sortDirection" th:value="${vouchers.filter?.sortDirection}">
+    </div>
+
     <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show" role="alert">
         <strong th:text="#{common.success}">Success!</strong> <span th:text="${message}"></span>
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -12,56 +17,76 @@
         <tr>
             <th scope="col" style="width: 140px;" th:text="#{common.id}">#ID</th>
 
-            <th scope="col" style="width: 20%;" th:text="#{voucher.title}">Voucher Title</th>
+            <th sec:authorize="isAnonymous()" scope="col" style="width: 20%; cursor: pointer;" th:text="#{voucher.title}">Voucher Title</th>
+
+            <th sec:authorize="isAuthenticated()"
+                scope="col" style="width: 20%; cursor: pointer;"
+                class="user-select-none"
+                th:with="currentField=${vouchers.filter?.sortField},
+                 currentDir=${vouchers.filter?.sortDirection},
+                 isTitle=${currentField == 'title'},
+                 isAsc=${isTitle and currentDir == 'asc'},
+                 nextDir=${isAsc ? 'desc' : 'asc'}"
+                th:attr="hx-get=@{/vouchers(sortField='title', sortDirection=${nextDir})}"
+                hx-include="#combined-filter"
+                hx-params="not sortField, not sortDirection"
+                hx-target="#voucher-list">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span th:text="#{voucher.title}">Voucher Title</span>
+                    <span>
+                 <i class="fas fa-sort text-muted" th:if="${!isTitle}" style="opacity: 0.5;"></i>
+                 <i class="fas fa-sort-up" th:if="${isTitle and isAsc}"></i>
+                 <i class="fas fa-sort-down" th:if="${isTitle and !isAsc}"></i>
+            </span>
+                </div>
+            </th>
 
             <th scope="col" style="width: auto;" th:text="#{common.description}">Description</th>
+
+            <th sec:authorize="isAnonymous()" scope="col" style="width: 100px;" th:text="#{common.price}">Price</th>
 
             <th sec:authorize="isAuthenticated()"
                 scope="col" style="width: 100px; cursor: pointer;"
                 class="user-select-none"
-                th:with="sortObj=${vouchers.sort},
-                         sortOrder=${sortObj != null ? sortObj.getOrderFor('price') : null},
-                         isAsc=${sortOrder != null and sortOrder.isAscending()},
-                         nextSort=${isAsc ? 'price,desc' : 'price,asc'}"
-                th:attr="hx-get=@{/vouchers(sort=${nextSort})}"
+                th:with="currentField=${vouchers.filter?.sortField},
+                 currentDir=${vouchers.filter?.sortDirection},
+                 isPrice=${currentField == 'price'},
+                 isAsc=${isPrice and currentDir == 'asc'},
+                 nextDir=${isAsc ? 'desc' : 'asc'}"
+                th:attr="hx-get=@{/vouchers(sortField='price', sortDirection=${nextDir})}"
                 hx-include="#combined-filter"
+                hx-params="not sortField, not sortDirection"
                 hx-target="#voucher-list">
-
                 <div class="d-flex align-items-center justify-content-between">
                     <span th:text="#{common.price}">Price</span>
-
                     <span>
-                        <i class="fas fa-sort text-muted" th:if="${sortOrder == null}" style="opacity: 0.5;"></i>
-                        <i class="fas fa-sort-up" th:if="${sortOrder != null and isAsc}"></i>
-                        <i class="fas fa-sort-down" th:if="${sortOrder != null and !isAsc}"></i>
-                    </span>
+                <i class="fas fa-sort text-muted" th:if="${!isPrice}" style="opacity: 0.5;"></i>
+                <i class="fas fa-sort-up" th:if="${isPrice and isAsc}"></i>
+                <i class="fas fa-sort-down" th:if="${isPrice and !isAsc}"></i>
+            </span>
                 </div>
             </th>
 
-            <th sec:authorize="isAnonymous()" scope="col" style="width: 100px;" th:text="#{common.price}">Price</th>
-
             <th sec:authorize="isAuthenticated()" scope="col" style="width: 100px;" th:text="#{common.actions}">Actions</th>
+
         </tr>
         </thead>
         <tbody>
-
-        <tr th:each="voucher : ${vouchers.getData()}">
-            <td>
-                <div class="d-flex align-items-center justify-content-between id-hover-container">
-                    <span th:text="${#strings.substring(voucher.id, 0, 8)}"
-                          th:title="${voucher.id}"
-                          style="font-family: monospace; cursor: help;">
-                    </span>
-
-                    <button class="btn btn-sm btn-outline-secondary py-0 px-1 copy-btn"
-                            type="button"
-                            th:data-id="${voucher.id}"
-                            onclick="copyToClipBoard(this)"
-                            title="Copy ID">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-            </td>
+        <tr th:each="voucher : ${vouchers.data}"> <td>
+            <div class="d-flex align-items-center justify-content-between id-hover-container">
+                <span th:text="${#strings.substring(voucher.id, 0, 8)}"
+                      th:title="${voucher.id}"
+                      style="font-family: monospace; cursor: help;">
+                </span>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-1 copy-btn"
+                        type="button"
+                        th:data-id="${voucher.id}"
+                        onclick="copyToClipBoard(this)"
+                        title="Copy ID">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </td>
 
             <td th:text="${voucher.title}"
                 class="truncate-cell"
@@ -88,7 +113,7 @@
             </td>
         </tr>
 
-        <tr th:if="${#lists.isEmpty(vouchers.getData())}">
+        <tr th:if="${#lists.isEmpty(vouchers.data)}">
             <td colspan="5" class="text-center" th:text="#{voucher.not_found}">There is no vouchers</td>
         </tr>
         </tbody>

@@ -22,4 +22,22 @@ public class VoucherFilerRequest {
     private List<HotelType> hotels;
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
+    private String sortField;
+    private String sortDirection;
+
+    public void setSortField(String sortField) {
+        if (sortField != null && sortField.contains(",")) {
+            this.sortField = sortField.split(",")[0].trim();
+        } else {
+            this.sortField = sortField;
+        }
+    }
+
+    public void setSortDirection(String sortDirection) {
+        if (sortDirection != null && sortDirection.contains(",")) {
+            this.sortDirection = sortDirection.split(",")[0].trim();
+        } else {
+            this.sortDirection = sortDirection;
+        }
+    }
 }

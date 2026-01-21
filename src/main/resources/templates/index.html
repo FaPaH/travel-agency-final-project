@@ -20,12 +20,17 @@
     <div class="row px-4">
 
         <aside class="col-md-2">
-            <div class="filter-sidebar shadow-sm p-3 bg-white border rounded">
+            <div class="filter-sidebar">
                 <form sec:authorize="isAuthenticated()"
                       id="combined-filter"
                       hx-get="/vouchers"
                       hx-target="#voucher-list"
                       hx-trigger="change, keyup delay:500ms from:input">
+
+                    <div id="sort-inputs-container">
+                        <input type="hidden" name="sortField" value="">
+                        <input type="hidden" name="sortDirection" value="">
+                    </div>
 
                     <div th:replace="~{fragments/filter :: filter-fragment}"></div>
                 </form>
@@ -37,7 +42,7 @@
 
         <main class="col-md-10">
             <div id="voucher-list"
-                 class="voucher-list-container shadow-sm border rounded bg-white"
+                 class="voucher-list-container"
                  hx-get="/vouchers"
                  hx-trigger="load">
                 <div class="d-flex justify-content-center align-items-center" style="height: 100%;">

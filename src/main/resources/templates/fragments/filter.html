@@ -127,9 +127,12 @@
                         </div>
 
                         <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0"
-                                onclick="document.querySelectorAll('input[name=\'hotels\']').forEach(i => i.checked = false);
-                                         this.closest('form').reset();
-                                         this.closest('form').dispatchEvent(new Event('change'));"
+                                onclick="let f = this.closest('form');
+                                         f.querySelectorAll('input[name=\'hotels\']').forEach(i => i.checked = false);
+                                         f.querySelector('input[name=sortField]').value = '';
+                                         f.querySelector('input[name=sortDirection]').value = '';
+                                         f.reset();
+                                         f.dispatchEvent(new Event('change'));"
                                 th:text="'✕ ' + #{filter.reset}">
                             ✕ reset
                         </button>

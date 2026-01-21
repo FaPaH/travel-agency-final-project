@@ -120,7 +120,7 @@ public class VoucherServiceImpl implements VoucherService {
                     () -> new ResourceNotFoundException("Voucher", id)
             );
 
-            User user = voucher.getUser();
+//            User user = voucher.getUser();
 
             if (statusRequest.getVoucherStatus() != null) {
                 switch (VoucherStatus.valueOf(statusRequest.getVoucherStatus())) {
@@ -163,10 +163,10 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public VoucherPaginatedResponse findAllByUserId(PersonalVoucherFilterRequest filterRequest, Pageable pageable) {
-        boolean isDefaultRequest = isFilterEmpty(filterRequest, pageable);
+        boolean isDefaultRequest = isFilterEmpty(filterRequest);
 
         String cacheKey = String.format("user_vouchers_id%s_p%d",
-                filterRequest.getUserId() ,pageable.getPageNumber());
+                filterRequest.getUserId(), pageable.getPageNumber());
 
         if (isDefaultRequest) {
             VoucherPaginatedResponse cached = voucherPageStorage.get(cacheKey);
@@ -175,10 +175,10 @@ public class VoucherServiceImpl implements VoucherService {
             }
         }
 
-        Specification<Voucher> spec = VoucherSpecifications.withFilters(filterRequest, pageable);
+        Specification<Voucher> spec = VoucherSpecifications.withFilters(filterRequest);
 
         Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
-        VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage);
+        VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage, filterRequest);
 
         if (isDefaultRequest) {
             voucherPageStorage.store(cacheKey, paginatedResponse);
@@ -186,9 +186,10 @@ public class VoucherServiceImpl implements VoucherService {
 
         return paginatedResponse;
     }
+
     @Override
     public VoucherPaginatedResponse findWithFilers(VoucherFilerRequest voucherFilerRequest, Pageable pageable) {
-        boolean isDefaultRequest = isFilterEmpty(voucherFilerRequest, pageable);
+        boolean isDefaultRequest = isFilterEmpty(voucherFilerRequest);
 
         String cacheKey = String.format("vouchers_p%d_s%d",
                 pageable.getPageNumber(), pageable.getPageSize());
@@ -200,10 +201,10 @@ public class VoucherServiceImpl implements VoucherService {
             }
         }
 
-        Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFilerRequest, pageable);
+        Specification<Voucher> spec = VoucherSpecifications.withFilters(voucherFilerRequest);
 
         Page<VoucherDTO> dtoPage = voucherRepository.findAll(spec, pageable).map(voucherMapper::toVoucherDTO);
-        VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage);
+        VoucherPaginatedResponse paginatedResponse = PaginationMapper.toVoucherResponse(dtoPage, voucherFilerRequest);
 
         if (isDefaultRequest) {
             voucherPageStorage.store(cacheKey, paginatedResponse);
@@ -212,7 +213,7 @@ public class VoucherServiceImpl implements VoucherService {
         return paginatedResponse;
     }
 
-    private boolean isFilterEmpty(VoucherFilerRequest filter, Pageable pageable) {
+    private boolean isFilterEmpty(VoucherFilerRequest filter) {
         boolean isEmpty = true;
 
         if (filter instanceof PersonalVoucherFilterRequest personalFilter) {
@@ -221,9 +222,9 @@ public class VoucherServiceImpl implements VoucherService {
 
         if (filter instanceof AdminVoucherFilterRequest adminFilter) {
             isEmpty = adminFilter.getStatuses() == null &&
-                        adminFilter.getIsHot() == null &&
-                        adminFilter.getVoucherId() == null &&
-                        adminFilter.getTitle() == null;
+                    adminFilter.getIsHot() == null &&
+                    adminFilter.getVoucherId() == null &&
+                    adminFilter.getTitle() == null;
         }
 
         return filter.getTours() == null &&
@@ -231,7 +232,7 @@ public class VoucherServiceImpl implements VoucherService {
                 filter.getMaxPrice() == null &&
                 filter.getHotels() == null &&
                 filter.getTransfers() == null &&
-                (pageable == null || pageable.getSort().isUnsorted())
-                && isEmpty;
+                filter.getSortField() == null &&
+                isEmpty;
     }
 }
