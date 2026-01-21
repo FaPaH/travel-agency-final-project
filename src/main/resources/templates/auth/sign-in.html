@@ -14,53 +14,54 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
+
+        <div th:if="${param.logout}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Ready!</strong> You are logout
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${errorMessage}">Error message placeholder</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <div class="col-md-5">
-            <div class="card shadow p-4" id="login-container">
+            <div class="card shadow p-4">
                 <h2 class="text-center mb-4">Login</h2>
 
-                <div th:if="${param.logout}" class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Ready!</strong> You are logout
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div  id="login-container">
+                    <form th:fragment="login-form"
+                          th:attr="hx-post=@{/auth/perform_login}"
+                          hx-target="#login-container"
+                          hx-swap="innerHTML"
+                          th:object="${loginRequest}">
+
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            Invalid username or password.
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" id="username"
+                                   th:field="*{username}"
+                                   th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
+                                   placeholder="Enter username">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password"
+                                   th:field="*{password}"
+                                   th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
+                                   placeholder="Password">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                    </form>
                 </div>
-
-                <div th:if="${errorMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <span th:text="${errorMessage}">Error message placeholder</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-
-                <form th:fragment="login-form"
-                      hx-post="/auth/perform_login"
-                      method="post"
-                      hx-target="#login-container"
-                      hx-swap="innerHTML"
-                      th:object="${loginRequest}">
-
-                    <div th:if="${param.error}" class="alert alert-danger">
-                        Invalid username or password.
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username"
-                               th:field="*{username}"
-                               th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
-                               placeholder="Enter username" required>
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password"
-                               th:field="*{password}"
-                               th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
-                               placeholder="Password" required>
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Sign In</button>
-                </form>
-
                 <div class="divider text-center my-3">OR</div>
                 <div class="social-login d-grid gap-2">
                     <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-danger"><i class="fab fa-google"></i> Google</a>

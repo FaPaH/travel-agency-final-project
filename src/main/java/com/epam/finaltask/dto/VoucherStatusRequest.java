@@ -13,6 +13,6 @@ public class VoucherStatusRequest {
 
     private Boolean isHot;
 
-    @EnumValidator(enumClass = VoucherStatus.class)
+    @EnumValidator(enumClass = VoucherStatus.class, message = "{validation.enum.invalid}")
     private String voucherStatus;
 }

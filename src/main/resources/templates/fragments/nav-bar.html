@@ -19,6 +19,32 @@
                     <a class="nav-link active" aria-current="page" th:href="@{/admin/dashboard}">Admin</a>
                 </li>
             </ul>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+
+                    <i class="fas fa-globe me-1"></i>
+                    <span th:text="${#locale.language.toUpperCase()}">EN</span>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                    <li>
+                        <a class="dropdown-item" th:href="@{''(lang='en')}"
+                           th:classappend="${#locale.language == 'en'} ? 'active' : ''">
+                            English
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" th:href="@{''(lang='ukr')}"
+                           th:classappend="${#locale.language == 'ukr'} ? 'active' : ''">
+                            Українська
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
             <nav class="navbar navbar-light bg-light">
                 <form sec:authorize="isAnonymous()" class="container-fluid justify-content-start">
                     <a th:href="@{/auth/sign-in}" class="btn btn-outline-success me-2">Sign in</a>

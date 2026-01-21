@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RefreshTokenRequest {
 
-    @NotBlank(message = "Token not found")
+    @NotBlank(message = "{validation.token.required}")
     private String refreshToken;
 }

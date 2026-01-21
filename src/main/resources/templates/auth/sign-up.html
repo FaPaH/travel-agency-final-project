@@ -12,59 +12,59 @@
 
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6 border p-4 bg-white shadow-sm rounded" id="signup-container">
+        <div class="col-md-6 border p-4 bg-white shadow-sm rounded">
             <h2>Register</h2>
 
-            <form th:fragment="signup-form"
-                  hx-post="/auth/register"
-                  method="post"
-                  hx-target="#signup-container"
-                  hx-swap="innerHTML"
-                  th:object="${registerRequest}">
+            <div id="signup-container">
+                <form th:fragment="signup-form"
+                      th:attr="hx-post=@{/auth/register}"
+                      hx-target="#signup-container"
+                      th:object="${registerRequest}">
 
-                <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" class="form-control" th:field="*{username}"
-                           th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'">
-                    <div class="invalid-feedback" th:errors="*{username}"></div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" th:field="*{email}"
-                           th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
-                    <div class="invalid-feedback" th:errors="*{email}"></div>
-                </div>
-
-                <div class="row">
-                    <div class="col mb-3">
-                        <label class="form-label">First Name</label>
-                        <input type="text" class="form-control" th:field="*{firstName}"
-                               th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'">
-                        <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control" th:field="*{username}"
+                               th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{username}"></div>
                     </div>
-                    <div class="col mb-3">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" class="form-control" th:field="*{lastName}"
-                               th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'">
-                        <div class="invalid-feedback" th:errors="*{lastName}"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" th:field="*{email}"
+                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{email}"></div>
                     </div>
-                </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-control" th:field="*{password}"
-                           th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'">
-                    <div class="invalid-feedback" th:errors="*{password}"></div>
-                </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" th:field="*{firstName}"
+                                   th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{firstName}"></div>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" th:field="*{lastName}"
+                                   th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'">
+                            <div class="invalid-feedback" th:errors="*{lastName}"></div>
+                        </div>
+                    </div>
 
-                <button type="submit" class="btn btn-primary w-100">Create Account</button>
-            </form>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" th:field="*{password}"
+                               th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{password}"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <script th:src="@{/js/script.js}"></script>
 </body>

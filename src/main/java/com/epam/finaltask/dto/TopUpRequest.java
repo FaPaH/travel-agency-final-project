@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class TopUpRequest {
 
-    @NotNull(message = "Sum cant be empty")
-    @PositiveOrZero(message = "Sum must be more than or equals zero")
+    @NotNull(message = "{validation.payment.amount.required}")
+    @PositiveOrZero(message = "{validation.payment.amount.positive}")
     private BigDecimal amount;
 }

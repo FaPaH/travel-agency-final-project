@@ -8,10 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 public class LoginRequest {
 
-    @NotBlank(message = "Please provide username")
+    @NotBlank(message = "{validation.auth.username.required}")
     private String username;
 
-    @NotBlank(message = "Please provide password")
+    @NotBlank(message = "{validation.auth.password.required}")
     @ToString.Exclude
     private String password;
 }

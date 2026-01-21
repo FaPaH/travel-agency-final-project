@@ -1,6 +1,7 @@
 package com.epam.finaltask.service.impl;
 
 import com.epam.finaltask.dto.*;
+import com.epam.finaltask.exception.ExpiredTokenException;
 import com.epam.finaltask.exception.InvalidTokenException;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.AuthProvider;
@@ -12,6 +13,7 @@ import com.epam.finaltask.service.ResetService;
 import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -65,9 +67,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthResponse refresh(RefreshTokenRequest refreshRequest) {
-        if (jwtTokenStorageService.get(jwtUtil.extractUsername(refreshRequest.getRefreshToken())) == null
-                || jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
-            throw new InvalidTokenException("Token has expired, please login again");
+        if (jwtTokenStorageService.get(jwtUtil.extractUsername(refreshRequest.getRefreshToken())) == null) {
+            throw new InvalidTokenException();
+        }
+        if (jwtUtil.isTokenExpired(refreshRequest.getRefreshToken())) {
+            throw new ExpiredTokenException();
         }
 
         User user = userMapper.toUser(

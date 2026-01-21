@@ -2,13 +2,12 @@ package com.epam.finaltask.exception;
 
 import com.epam.finaltask.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,15 +24,27 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @ControllerAdvice(annotations = Controller.class)
 @RequiredArgsConstructor
 @Slf4j
 public class UIExceptionHandler {
 
+    private final MessageSource messageSource;
+
+    @ExceptionHandler(LocalizedException.class)
+    public String handleLocalizedException(LocalizedException ex,
+                                           HttpServletRequest request,
+                                           HttpServletResponse response,
+                                           Model model,
+                                           Locale locale) {
+
+        HttpStatus status = getStatusForException(ex);
+        return returnErrorAlert(ex.getMessageKey(), ex.getArgs(), request, response, model, status, locale, null);
+    }
+
     @ExceptionHandler({
-            AlreadyInUseException.class,
-            NotEnoughBalanceException.class,
             DisabledException.class,
             BadCredentialsException.class,
             InvalidTokenException.class,
@@ -43,51 +54,38 @@ public class UIExceptionHandler {
             InternalAuthenticationServiceException.class,
             AuthenticationException.class
     })
-    public String handleBusinessExceptions(Exception ex,
+    public String handleStandardExceptions(Exception ex,
                                            HttpServletRequest request,
                                            HttpServletResponse response,
-                                           Model model) {
+                                           Model model,
+                                           Locale locale) {
 
-        String message = ex.getMessage();
+        String key = "error.general";
+        HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        if (ex instanceof AuthenticationException) {
-            message = "Invalid username or password";
+        if (ex instanceof BadCredentialsException) {
+            key = "error.auth.bad_credentials";
+            status = HttpStatus.UNAUTHORIZED;
+        } else if (ex instanceof DisabledException) {
+            key = "error.auth.disabled";
+            status = HttpStatus.LOCKED;
+        } else if (ex instanceof AuthenticationException) {
+            key = "error.auth.general";
+            status = HttpStatus.UNAUTHORIZED;
+        } else if (ex instanceof EntityNotFoundException || ex instanceof NoResourceFoundException) {
+            key = "error.resource.not_found_generic";
+            status = HttpStatus.NOT_FOUND;
         }
 
-        HttpStatus status = getStatusForException(ex);
-
-        return returnErrorAlert(message, request, response, model, status);
-    }
-
-    @ExceptionHandler({JwtException.class, ExpiredJwtException.class})
-    public String handleJwtExceptions(Exception ex,
-                                      HttpServletRequest request,
-                                      HttpServletResponse response,
-                                      Model model) {
-        return returnErrorAlert(ex.getMessage(), request, response, model, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler({EntityNotFoundException.class, NoResourceFoundException.class})
-    public String handleNotFoundExceptions(Exception ex,
-                                           HttpServletRequest request,
-                                           HttpServletResponse response,
-                                           Model model) {
-        return returnErrorAlert(ex.getMessage(), request, response, model, HttpStatus.NOT_FOUND);
-
-//        ErrorResponse errorResponse = generateErrorResponse(request.getRequestURI(), HttpStatus.NOT_FOUND, ex.getMessage(), null);
-//        model.addAttribute("errorResponse", errorResponse);
-//        response.setStatus(HttpStatus.NOT_FOUND.value());
-//        response.setHeader("HX-Retarget", "body");
-//        response.setHeader("HX-Reswap", "innerHTML");
-//        return "error/404";
-
+        return returnErrorAlert(key, null, request, response, model, status, locale, null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public String handleValidationExceptions(MethodArgumentNotValidException ex,
                                              HttpServletRequest request,
                                              HttpServletResponse response,
-                                             Model model) {
+                                             Model model,
+                                             Locale locale) {
 
         List<ErrorResponse.ValidationError> validationErrors = ex.getBindingResult()
                 .getFieldErrors()
@@ -99,62 +97,71 @@ public class UIExceptionHandler {
                         .build())
                 .toList();
 
-        ErrorResponse errorResponse = generateErrorResponse(
-                request.getRequestURI(),
+        return returnErrorAlert(
+                "error.validation.failed",
+                null,
+                request,
+                response,
+                model,
                 HttpStatus.BAD_REQUEST,
-                "Validation Error",
+                locale,
                 validationErrors
         );
-
-        model.addAttribute("errorResponse", errorResponse);
-
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.setHeader("HX-Retarget", "#alerts-container");
-        response.setHeader("HX-Reswap", "innerHTML");
-
-        return "fragments/common :: error-alert-fragment";
     }
 
     @ExceptionHandler(Exception.class)
     public String handleGeneralException(Exception ex,
                                          HttpServletRequest request,
                                          Model model,
-                                         HttpServletResponse response) {
+                                         HttpServletResponse response,
+                                         Locale locale) {
+
         log.error("Unexpected error in {} with cause = {}",
                 request.getRequestURI(), ex.getCause() != null ? ex.getCause() : "NULL", ex);
+
+        String message = messageSource.getMessage(
+                "error.server.internal",
+                null,
+                "Unexpected internal error",
+                locale
+        );
 
         ErrorResponse errorResponse = generateErrorResponse(
                 request.getRequestURI(),
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                ex.getMessage(),
+                message,
                 null);
 
         model.addAttribute("errorResponse", errorResponse);
 
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-
         response.setHeader("HX-Retarget", "body");
         response.setHeader("HX-Reswap", "innerHTML");
 
         return "error/500";
     }
 
-    private String returnErrorAlert(String message,
+    private String returnErrorAlert(String key,
+                                    Object[] args,
                                     HttpServletRequest request,
                                     HttpServletResponse response,
                                     Model model,
-                                    HttpStatus status) {
+                                    HttpStatus status,
+                                    Locale locale,
+                                    List<ErrorResponse.ValidationError> validationErrors) {
+
+        String translatedMessage = messageSource.getMessage(key, args, "Error: " + key, locale);
 
         ErrorResponse errorResponse = generateErrorResponse(
                 request.getRequestURI(),
                 status,
-                message,
-                null);
+                translatedMessage,
+                validationErrors
+        );
 
         model.addAttribute("errorResponse", errorResponse);
 
         response.setStatus(status.value());
-
         response.setHeader("HX-Retarget", "#alerts-container");
         response.setHeader("HX-Reswap", "innerHTML");
 
@@ -162,12 +169,14 @@ public class UIExceptionHandler {
     }
 
     private HttpStatus getStatusForException(Exception ex) {
-        if (ex instanceof DisabledException) return HttpStatus.LOCKED;
         if (ex instanceof NotEnoughBalanceException) return HttpStatus.NOT_ACCEPTABLE;
         if (ex instanceof AlreadyInUseException) return HttpStatus.CONFLICT;
+        if (ex instanceof InvalidTokenException ||
+                ex instanceof ExpiredTokenException) return HttpStatus.UNAUTHORIZED;
+        if (ex instanceof ResourceNotFoundException) return HttpStatus.NOT_FOUND;
+        if (ex instanceof DisabledException) return HttpStatus.LOCKED;
         if (ex instanceof BadCredentialsException) return HttpStatus.BAD_REQUEST;
         if (ex instanceof OAuth2AuthenticationException) return HttpStatus.BAD_REQUEST;
-        if (ex instanceof InvalidTokenException) return HttpStatus.BAD_REQUEST;
         if (ex instanceof ConversionFailedException) return HttpStatus.UNPROCESSABLE_ENTITY;
         if (ex instanceof InvalidFormatException) return HttpStatus.UNPROCESSABLE_ENTITY;
         if (ex instanceof AuthenticationException) return HttpStatus.UNAUTHORIZED;

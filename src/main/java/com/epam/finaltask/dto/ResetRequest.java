@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ResetRequest {
 
-    @NotBlank(message = "Please provide email")
-    @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,10}",
+    @NotBlank(message = "{validation.user.email.required}")
+    @Pattern(regexp = "^$|^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,10}$",
             flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "Invalid mail format")
+            message = "{validation.user.email.format}")
     private String email;
 }

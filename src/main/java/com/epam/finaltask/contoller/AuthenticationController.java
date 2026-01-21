@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -70,9 +71,9 @@ public class AuthenticationController {
 
     @PostMapping("/perform_login")
     public String login(@ModelAttribute("loginRequest") @Valid LoginRequest loginRequest,
+                        BindingResult bindingResult,
                         HttpServletResponse response,
                         HttpServletRequest request,
-                        BindingResult bindingResult,
                         Model model) {
 
         if (bindingResult.hasErrors()) {

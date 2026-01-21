@@ -3,6 +3,7 @@ package com.epam.finaltask.service.impl;
 import com.epam.finaltask.dto.*;
 import com.epam.finaltask.exception.AlreadyInUseException;
 import com.epam.finaltask.exception.NotEnoughBalanceException;
+import com.epam.finaltask.exception.ResourceNotFoundException;
 import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.VoucherMapper;
 import com.epam.finaltask.model.*;
@@ -46,15 +47,15 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO order(String id, String userId) {
         Voucher voucher = voucherRepository.findById(UUID.fromString(id)).orElseThrow(
-                () -> new EntityNotFoundException("Voucher not found")
+                () -> new ResourceNotFoundException("Voucher", id)
         );
 
         User user = userRepository.findById(UUID.fromString(userId)).orElseThrow(
-                () -> new EntityNotFoundException("User not found")
+                () -> new ResourceNotFoundException("User", userId)
         );
 
         if (voucher.getUser() != null) {
-            throw new AlreadyInUseException("Voucher already taken");
+            throw new AlreadyInUseException("Voucher", voucher.getId().toString());
         }
 
         log.info("Processing payment operation from user {} with voucher {}", userId, voucher);
@@ -62,7 +63,7 @@ public class VoucherServiceImpl implements VoucherService {
         BigDecimal newBalance = user.getBalance().subtract(voucher.getPrice());
 
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new NotEnoughBalanceException("Not enough balance");
+            throw new NotEnoughBalanceException(user.getBalance(), voucher.getPrice());
         }
 
         user.setBalance(newBalance);
@@ -82,7 +83,7 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO update(String id, VoucherDTO voucherDTO) {
         if (!voucherRepository.existsById(UUID.fromString(id))) {
-            throw new EntityNotFoundException("Voucher not found");
+            throw new ResourceNotFoundException("Voucher", id);
         }
 
         Voucher voucher = voucherMapper.toVoucher(voucherDTO);
@@ -95,28 +96,28 @@ public class VoucherServiceImpl implements VoucherService {
     @Override
     public VoucherDTO getById(String id) {
         if (!voucherRepository.existsById(UUID.fromString(id))) {
-            throw new EntityNotFoundException("Voucher not found");
+            throw new ResourceNotFoundException("Voucher", id);
         }
 
         return voucherMapper.toVoucherDTO(voucherRepository.getReferenceById(UUID.fromString(id)));
     }
 
     @Override
-    public void delete(String voucherId) {
-        if (!voucherRepository.existsById(UUID.fromString(voucherId))) {
-            throw new EntityNotFoundException("Voucher not found");
+    public void delete(String id) {
+        if (!voucherRepository.existsById(UUID.fromString(id))) {
+            throw new ResourceNotFoundException("Voucher", id);
         }
 
         voucherPageStorage.clearAll();
 
-        voucherRepository.deleteById(UUID.fromString(voucherId));
+        voucherRepository.deleteById(UUID.fromString(id));
     }
 
     @Override
     public VoucherDTO changeStatus(String id, VoucherStatusRequest statusRequest) {
         try {
             Voucher voucher = voucherRepository.findById(UUID.fromString(id)).orElseThrow(
-                    () -> new EntityNotFoundException("Voucher not found")
+                    () -> new ResourceNotFoundException("Voucher", id)
             );
 
             User user = voucher.getUser();

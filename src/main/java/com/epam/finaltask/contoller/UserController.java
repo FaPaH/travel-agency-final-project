@@ -23,7 +23,7 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public class UserController {
 
-    //TODO: reformating api controllers, localization, tests
+    //TODO: reformating api controllers, tests
 
     private final UserService userService;
 

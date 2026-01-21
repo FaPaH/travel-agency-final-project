@@ -3,6 +3,7 @@ package com.epam.finaltask.service.impl;
 import com.epam.finaltask.dto.PaginatedResponse;
 import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.exception.AlreadyInUseException;
+import com.epam.finaltask.exception.ResourceNotFoundException;
 import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.UserMapper;
 import com.epam.finaltask.model.User;
@@ -32,9 +33,9 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO saveUser(UserDTO userDTO, String password) {
 		if (userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new AlreadyInUseException("Username is already registered");
+			throw new AlreadyInUseException("Username", userDTO.getUsername());
 		} else if (userRepository.existsByEmail(userDTO.getEmail())) {
-			throw new AlreadyInUseException("Email is already registered");
+			throw new AlreadyInUseException("Email", userDTO.getEmail());
 		}
 
 		User user = userMapper.toUser(userDTO);
@@ -46,11 +47,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO updateUser(String username, UserDTO userDTO) {
 		User user = userRepository.findUserByUsername(username)
-				.orElseThrow(() -> new EntityNotFoundException("User not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("User", username));
 
 		if (user.getEmail() != null && !user.getEmail().equals(userDTO.getEmail())) {
 			if (userRepository.existsByEmailAndIdNot(userDTO.getEmail(), user.getId())) {
-				throw new RuntimeException("Email already exist");
+				throw new AlreadyInUseException("Email", userDTO.getEmail());
 			}
 		}
 
@@ -67,7 +68,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO changeBalance(String userId, BigDecimal amount) {
 		User user = userRepository.findById(UUID.fromString(userId))
-				.orElseThrow(() -> new EntityNotFoundException("User not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
 		if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
 			user.setBalance(user.getBalance().add(amount));
@@ -87,7 +88,7 @@ public class UserServiceImpl implements UserService {
 
 		if (user == null) {
 			user = userMapper.toUserDTO(userRepository.findUserByUsername(username).orElseThrow(
-					() -> new EntityNotFoundException("User not found")
+					() ->  new ResourceNotFoundException("User", username)
 			));
 			userTokenStorageService.store(user.getId(), user);
 			userTokenStorageService.store(user.getUsername(), user);
@@ -114,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
 		if (user == null) {
 			user = userMapper.toUserDTO(userRepository.findById(id).orElseThrow(
-					() -> new EntityNotFoundException("User not found")
+					() ->  new ResourceNotFoundException("User", id)
 			));
 			userTokenStorageService.store(user.getId(), user);
 			userTokenStorageService.store(user.getUsername(), user);
@@ -131,14 +132,14 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDTO getUserByEmail(String email) {
 		return userMapper.toUserDTO(userRepository.findUserByEmail(email).orElseThrow(
-				() -> new EntityNotFoundException("User not found")
+				() ->  new ResourceNotFoundException("User", email)
 		));
 	}
 
 	@Override
 	public void changePassword(UserDTO userDTO, String newPassword) {
 		if (!userRepository.existsByUsername(userDTO.getUsername())) {
-			throw new EntityNotFoundException("User not found");
+			throw new ResourceNotFoundException("User", userDTO.getUsername());
 		}
 
 		User user = userMapper.toUser(userDTO);
@@ -156,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
 	private User getByUsername(String username) {
 		return userRepository.findUserByUsername(username).orElseThrow(
-				() -> new EntityNotFoundException("User not found")
+				() ->  new ResourceNotFoundException("User", username)
 		);
 	}
 }

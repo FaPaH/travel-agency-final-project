@@ -22,46 +22,46 @@ import java.util.UUID;
 @Setter
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
-@ValidDateRange
+@ValidDateRange(message = "{validation.voucher.date.range}")
 public class VoucherDTO {
 
     @ToString.Include
     @Pattern(regexp = "^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
-                message = "Invalid format of id")
+                message = "{validation.voucher.id.format}")
     private String id;
 
-    @NotBlank
+    @NotBlank(message = "{validation.voucher.title.required}")
     @ToString.Include
     private String title;
 
-    @NotBlank
+    @NotBlank(message = "{validation.voucher.description.required}")
     private String description;
 
     @ToString.Include
-    @Positive(message = "Price must be more than zero")
+    @Positive(message = "{validation.voucher.price.positive}")
     private BigDecimal price;
 
-    @NotNull
-    @EnumValidator(enumClass = TourType.class)
+    @NotNull(message = "{validation.required}")
+    @EnumValidator(enumClass = TourType.class, message = "{validation.enum.invalid}")
     private String tourType;
 
-    @NotNull
-    @EnumValidator(enumClass = TransferType.class)
+    @NotNull(message = "{validation.required}")
+    @EnumValidator(enumClass = TransferType.class, message = "{validation.enum.invalid}")
     private String transferType;
 
-    @NotNull
-    @EnumValidator(enumClass = HotelType.class)
+    @NotNull(message = "{validation.required}")
+    @EnumValidator(enumClass = HotelType.class, message = "{validation.enum.invalid}")
     private String hotelType;
 
-    @NotNull
-    @EnumValidator(enumClass = VoucherStatus.class)
+    @NotNull(message = "{validation.required}")
+    @EnumValidator(enumClass = VoucherStatus.class, message = "{validation.enum.invalid}")
     private String status;
 
-   @NotNull
-   @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @NotNull(message = "{validation.voucher.date.required}")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate arrivalDate;
 
-    @NotNull
+    @NotNull(message = "{validation.voucher.date.required}")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate evictionDate;
 

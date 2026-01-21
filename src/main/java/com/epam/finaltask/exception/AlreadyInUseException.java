@@ -1,8 +1,8 @@
 package com.epam.finaltask.exception;
 
-public class AlreadyInUseException extends RuntimeException {
+public class AlreadyInUseException extends LocalizedException {
 
-    public AlreadyInUseException(String msg) {
-        super(msg);
+    public AlreadyInUseException(String resourceName, String value) {
+        super("error.resource.already_in_use", resourceName, value);
     }
 }

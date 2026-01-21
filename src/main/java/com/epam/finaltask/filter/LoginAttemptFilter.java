@@ -10,15 +10,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.LocaleResolver;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -27,6 +30,8 @@ import java.util.Optional;
 public class LoginAttemptFilter extends OncePerRequestFilter {
 
     private final AttemptService attemptService;
+    private final MessageSource messageSource;
+    private final LocaleResolver localeResolver;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -53,19 +58,28 @@ public class LoginAttemptFilter extends OncePerRequestFilter {
     }
 
     private void handleBlockedResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String message = "Too many failed attempts. You are blocked. Try again later.";
+
+        Locale locale = localeResolver.resolveLocale(request);
+
+        String message = messageSource.getMessage(
+                "error.auth.blocked",
+                null,
+                "Too many failed attempts. You are blocked.",
+                locale
+        );
 
         String path = request.getRequestURI();
 
         if (path.startsWith("/api/")) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
 
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .timestamp(LocalDateTime.now())
-                    .statusCode(HttpStatus.UNAUTHORIZED.value())
-                    .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                    .message("")
+                    .statusCode(HttpStatus.TOO_MANY_REQUESTS.value())
+                    .error("Too Many Requests")
+                    .message(message)
                     .path(path)
                     .validationErrors(null)
                     .build();

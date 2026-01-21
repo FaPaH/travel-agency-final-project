@@ -11,21 +11,21 @@ import lombok.*;
 @Builder
 public class ResetPasswordRequest {
 
-    @NotBlank(message = "Token not found")
+    @NotBlank(message = "{validation.token.required}")
     private String token;
 
-    @NotBlank(message = "Please provide password")
-    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters long")
+    @NotBlank(message = "{validation.auth.password.required}")
+    @Size(min = 8, max = 20, message = "{validation.password.size}")
     @Pattern(regexp = "^\\S+$",
-            message = "Password must not contain spaces")
+            message = "{validation.password.no_spaces}")
     @Pattern(regexp = ".*[0-9].*",
-            message = "Password must contain at least one digit")
+            message = "{validation.password.digit}")
     @Pattern(regexp = ".*[a-z].*",
-            message = "Password must contain at least one lowercase letter")
+            message = "{validation.password.lowercase}")
     @Pattern(regexp = ".*[A-Z].*",
-            message = "Password must contain at least one uppercase letter")
+            message = "{validation.password.uppercase}")
     @Pattern(regexp = ".*[!@#$%&*()+=^.-].*",
-            message = "Password must contain at least one special character (!@#$%&*()+=^.-)")
+            message = "{validation.password.special}")
     @ToString.Exclude
     private String newPassword;
 }

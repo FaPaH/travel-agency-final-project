@@ -1,8 +1,8 @@
 package com.epam.finaltask.exception;
 
-public class InvalidTokenException extends RuntimeException {
+public class InvalidTokenException extends LocalizedException {
 
-    public InvalidTokenException(String msg) {
-        super(msg);
+    public InvalidTokenException() {
+        super("error.token.invalid");
     }
 }

@@ -103,3 +103,17 @@
 .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ccc; }
 .divider:not(:empty)::before { margin-right: .25em; }
 .divider:not(:empty)::after { margin-left: .25em; }
+
+.htmx-indicator {
+    display: none;
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+    opacity: 1;
+}
+.htmx-request.htmx-indicator {
+    display: inline-block;
+    opacity: 1;
+}
