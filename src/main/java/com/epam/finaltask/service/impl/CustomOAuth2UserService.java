@@ -3,14 +3,22 @@ package com.epam.finaltask.service.impl;
 import com.epam.finaltask.model.AuthProvider;
 import com.epam.finaltask.model.Role;
 import com.epam.finaltask.model.User;
+import com.epam.finaltask.model.UserPrincipal;
 import com.epam.finaltask.repository.UserRepository;
+import com.epam.finaltask.util.factory.oauth2factory.OAuth2UserInfo;
+import com.epam.finaltask.util.factory.oauth2factory.OAuth2UserInfoFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.util.StringUtils;
 
 import java.util.UUID;
 
@@ -27,51 +35,61 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         try {
             return processOAuth2User(userRequest, oAuth2User);
+        } catch (AuthenticationException ex) {
+            throw ex;
         } catch (Exception ex) {
-            throw new OAuth2AuthenticationException(ex.getCause().toString());
+            throw new InternalAuthenticationServiceException("Failed to process OAuth2User", ex);
         }
     }
 
     private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
-        String email = oAuth2User.getAttribute("email");
-        String login = oAuth2User.getAttribute("login");
-        User user;
+        OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId, oAuth2User.getAttributes());
 
-        if (email == null) {
-            if ("github".equalsIgnoreCase(registrationId) || "facebook".equalsIgnoreCase(registrationId)) {
-                user = userRepository.findUserByUsername(login).orElse(null);
-            } else {
-                throw new OAuth2AuthenticationException("Cant find email or login");
+        User user = userRepository.findUserByEmail(userInfo.getEmail()).orElse(null);
+
+        if (user != null) {
+            if (!user.getAuthProvider().equals(AuthProvider.valueOf(registrationId.toUpperCase()))) {
+                throw new OAuth2AuthenticationException(new OAuth2Error("error.auth.wrong_provider"),
+                        "Wrong provider used");
             }
+            user = updateExistingUser(user, userInfo);
         } else {
-            user = userRepository.findUserByEmail(email).orElse(null);
+            user = registerNewUser(userRequest, userInfo);
         }
 
-        if (user == null) {
-            user = registerNewUser(userRequest, oAuth2User, email, login);
-        } else {
-            if (!user.isAccountNonLocked()) {
-                throw new OAuth2AuthenticationException("User account is disabled");
-            }
+        return UserPrincipal.create(user, oAuth2User.getAttributes());
+    }
 
-            user = updateExistingUser(user, userRequest, oAuth2User);
+    private User updateExistingUser(User existingUser, OAuth2UserInfo userInfo) {
+        existingUser.setUsername(userInfo.getName());
+
+        if (userInfo.getFirstName() != null) {
+            existingUser.setFirstName(userInfo.getFirstName());
+        }
+        if (userInfo.getLastName() != null) {
+            existingUser.setLastName(userInfo.getLastName());
         }
 
-        return oAuth2User;
+        return userRepository.save(existingUser);
     }
 
-    private User updateExistingUser(User user, OAuth2UserRequest userRequest, OAuth2User oAuth2User) {
-        // TODO: update logic?
-        return userRepository.save(user);
-    }
+    private User registerNewUser(OAuth2UserRequest userRequest, OAuth2UserInfo userInfo) {
 
-    private User registerNewUser(OAuth2UserRequest userRequest, OAuth2User oAuth2User, String email, String login) {
+        String usernameCandidate = userInfo.getUsername();
+
+        if (usernameCandidate == null) {
+            throw new OAuth2AuthenticationException(new OAuth2Error("error.auth.email_not_found"),
+                    "Email not found");
+        }
+
         User user = User.builder()
                 .authProvider(AuthProvider.valueOf(userRequest.getClientRegistration().getRegistrationId().toUpperCase()))
-                .username(login == null ? email.replaceAll("@.*", "") : login)
-                .email(email)
+                .username(usernameCandidate)
+                .email(userInfo.getEmail())
+                .firstName(userInfo.getFirstName())
+                .lastName(userInfo.getLastName())
                 .role(Role.USER)
                 .active(true)
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))

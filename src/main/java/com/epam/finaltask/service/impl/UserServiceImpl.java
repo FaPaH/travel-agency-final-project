@@ -6,6 +6,7 @@ import com.epam.finaltask.exception.AlreadyInUseException;
 import com.epam.finaltask.exception.ResourceNotFoundException;
 import com.epam.finaltask.mapper.PaginationMapper;
 import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.model.AuthProvider;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.service.TokenStorageService;
@@ -144,6 +145,7 @@ public class UserServiceImpl implements UserService {
 
 		User user = userMapper.toUser(userDTO);
 		user.setPassword(newPassword);
+		user.setAuthProvider(AuthProvider.LOCAL);
 
 		userMapper.toUserDTO(userRepository.save(user));
 	}
