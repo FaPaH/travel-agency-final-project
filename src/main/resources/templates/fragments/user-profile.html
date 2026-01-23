@@ -1,0 +1,91 @@
+<div th:fragment="user-info-fragment">
+    <h4 th:text="#{user.profile.title}">My profile</h4>
+    <div id="profile-container">
+        <div class="card p-3" id="profile-details">
+            <p><strong th:text="#{common.id} + ':'">ID:</strong> <span th:text="${user.id}">1</span></p>
+            <p><strong th:text="#{auth.username} + ':'">Username:</strong> <span th:text="${user.username}">admin</span></p>
+            <p><strong th:text="#{user.firstname} + ':'">First Name:</strong> <span th:text="${user.firstName} ?: #{user.not_specified}">1</span></p>
+            <p><strong th:text="#{user.lastname} + ':'">Last Name:</strong> <span th:text="${user.lastName} ?: #{user.not_specified}">admin</span></p>
+            <p><strong th:text="#{user.phone} + ':'">Phone Number:</strong> <span th:text="${user.phoneNumber} ?: #{user.not_specified}"></span></p>
+            <p><strong th:text="#{user.email} + ':'">Email:</strong> <span th:text="${user.email} ?: #{user.not_specified}"></span></p>
+
+            <button class="btn btn-sm btn-outline-primary"
+                    th:attr="hx-get=@{/user/profile/{id}/edit(id=${user.id})}"
+                    hx-target="#profile-details"
+                    th:text="#{user.profile.edit}">
+                Edit Profile
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<form th:fragment="profile-edit-fragment"
+      th:attr="hx-post=@{/user/profile/{id}/update(id=${user.id})}"
+      hx-target="#profile-details"
+      th:object="${user}">
+
+    <input type="hidden" name="id" th:value="${user.id}">
+    <input type="hidden" name="username" th:value="${user.username}">
+
+    <div class="form-group">
+        <label th:text="#{user.firstname}">First Name</label>
+        <input type="text" th:field="*{firstName}" class="form-control"
+               th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
+    </div>
+    <div class="form-group">
+        <label th:text="#{user.lastname}">Last Name</label>
+        <input type="text" th:field="*{lastName}" class="form-control"
+               th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
+    </div>
+    <div class="form-group">
+        <label th:text="#{user.email}">Email</label>
+        <input type="email" th:field="*{email}" class="form-control"
+               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+    </div>
+    <div class="form-group">
+        <label th:text="#{user.phone}">Phone</label>
+        <input type="text" th:field="*{phoneNumber}" class="form-control"
+               th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
+    </div>
+
+    <button type="submit" class="btn btn-success btn-sm" th:text="#{common.update}">Update</button>
+    <button type="button" class="btn btn-secondary btn-sm"
+            th:attr="hx-get=@{/user/profile/{id}(id=${user.id})}"
+            hx-target="#profile-container"
+            hx-select="#profile-details"
+            th:text="#{common.cancel}">
+        Cancel
+    </button>
+</form>
+
+<div th:fragment="profile-balance-fragment" id="profile-balance-wrapper">
+    <div class="card p-3" id="profile-balance-details">
+        <p><strong th:text="#{user.balance.current}">Current Balance:</strong> <span th:text="${user.balance}">0.00</span></p>
+    </div>
+
+    <div id="top-up-container">
+        <form th:attr="hx-post=@{/user/profile/{id}/balance/top-up(id=${user.id})}"
+              hx-target="#profile-balance-wrapper"
+              th:object="${topup}">
+
+            <input type="hidden" name="id" th:value="${user.id}">
+
+            <div class="form-group">
+                <label th:for="amount" th:text="#{user.balance.topup_label}">Top up amount</label>
+                <input type="number"
+                       id="amount"
+                       th:field="*{amount}"
+                       class="form-control"
+                       th:placeholder="#{user.balance.topup_placeholder}"
+                       th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid'">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" th:text="#{user.balance.topup_btn}">Top up</button>
+        </form>
+    </div>
+</div>

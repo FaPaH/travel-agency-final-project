@@ -2,6 +2,7 @@ package com.epam.finaltask.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -68,4 +69,10 @@ public class Voucher extends BaseEntity{
     @ColumnDefault("false")
     @Column(name = "is_hot")
     private Boolean isHot;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 }

@@ -1,5 +1,6 @@
-package com.epam.finaltask.service;
+package com.epam.finaltask.service.impl;
 
+import com.epam.finaltask.service.TokenStorageService;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 

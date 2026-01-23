@@ -1,0 +1,145 @@
+<div th:fragment="admin-search-fragment">
+
+    <button class="btn btn-outline-primary mb-2 w-100 d-flex justify-content-between align-items-center"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#adminFilterPanel"
+            aria-expanded="false">
+        <span th:text="#{filter.additional}">Additional Filters</span>
+        <span>↓</span>
+    </button>
+
+    <div class="collapse show" id="adminFilterPanel">
+        <div class="card card-body shadow-sm mb-3 p-3">
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <label class="fw-bold small mb-1" th:text="#{filter.search.label}">Search voucher:</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="title"
+                               class="form-control"
+                               th:placeholder="#{filter.search.placeholder.title}">
+                        <input type="text" name="voucherId"
+                               class="form-control"
+                               style="max-width: 120px;"
+                               th:placeholder="#{common.id}">
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="fw-bold small mb-1 d-block" th:text="#{filter.status}">Statuses:</label>
+                    <div class="d-flex flex-wrap gap-1">
+                        <th:block th:each="status : ${T(com.epam.finaltask.model.VoucherStatus).values()}">
+                            <input type="checkbox" class="btn-check" name="statuses"
+                                   th:id="${'filter-status-' + status}" th:value="${status}">
+                            <label class="btn btn-sm btn-outline-secondary rounded-pill"
+                                   th:for="${'filter-status-' + status}" th:text="${status}"></label>
+                        </th:block>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-end border-top pt-2 mt-1">
+
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox"
+                                   name="isHot" id="filter-is-hot" value="true"
+                                   style="cursor: pointer;">
+                            <label class="form-check-label fw-bold text-danger small" for="filter-is-hot"
+                                   th:text="'🔥 ' + #{filter.only_hot}">🔥 Only Hot</label>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0"
+                                onclick="this.closest('form').reset();
+                                         this.closest('form').dispatchEvent(new Event('change'));"
+                                th:text="'✕ ' + #{filter.reset}">
+                            ✕ reset
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="filter-fragment">
+
+    <button class="btn btn-outline-primary mb-2 w-100 d-flex justify-content-between align-items-center"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#filterPanel"
+            aria-expanded="false">
+        <span th:text="#{filter.categories}">Filters</span>
+        <span>↓</span>
+    </button>
+
+    <div class="collapse show" id="filterPanel">
+        <div class="card card-body shadow-sm mb-3 p-3">
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <label class="fw-bold small mb-1" th:text="#{filter.price_range}">Price range:</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0" th:text="#{filter.placeholder.from}">From</span>
+                        <input type="number" name="minPrice" class="form-control" placeholder="0">
+                        <span class="input-group-text bg-light border-start-0 border-end-0">-</span>
+                        <span class="input-group-text bg-light border-end-0" th:text="#{filter.placeholder.to}">To</span>
+                        <input type="number" name="maxPrice" class="form-control" placeholder="Max">
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="fw-bold small mb-1" th:text="#{voucher.tour_type}">Tour type:</label>
+                    <div class="d-flex flex-wrap gap-1">
+                        <th:block th:each="tour : ${T(com.epam.finaltask.model.TourType).values()}">
+                            <input type="checkbox" class="btn-check" name="tours"
+                                   th:id="${'tour-' + tour}" th:value="${tour}">
+                            <label class="btn btn-sm btn-outline-secondary rounded-pill"
+                                   th:for="${'tour-' + tour}" th:text="${tour}"></label>
+                        </th:block>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="fw-bold small mb-1" th:text="#{voucher.transfer_type}">Transfer:</label>
+                    <div class="d-flex flex-wrap gap-1">
+                        <th:block th:each="transfer : ${T(com.epam.finaltask.model.TransferType).values()}">
+                            <input type="checkbox" class="btn-check" name="transfers"
+                                   th:id="${'transfer-' + transfer}" th:value="${transfer}">
+                            <label class="btn btn-sm btn-outline-secondary rounded-pill"
+                                   th:for="${'transfer-' + transfer}" th:text="${transfer}"></label>
+                        </th:block>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-end border-top pt-2 mt-1">
+
+                        <div>
+                            <label class="fw-bold small mb-1 d-block" th:text="#{voucher.hotel_type}">Stars:</label>
+                            <div class="star-rating">
+                                <th:block th:each="type : ${T(com.epam.finaltask.model.HotelType).values()}">
+                                    <input type="radio" th:id="${'star-' + type}" name="hotels" th:value="${type}" />
+                                    <label th:for="${'star-' + type}"></label>
+                                </th:block>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none p-0"
+                                onclick="let f = this.closest('form');
+                                         f.querySelectorAll('input[name=\'hotels\']').forEach(i => i.checked = false);
+                                         f.querySelector('input[name=sortField]').value = '';
+                                         f.querySelector('input[name=sortDirection]').value = '';
+                                         f.reset();
+                                         f.dispatchEvent(new Event('change'));"
+                                th:text="'✕ ' + #{filter.reset}">
+                            ✕ reset
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

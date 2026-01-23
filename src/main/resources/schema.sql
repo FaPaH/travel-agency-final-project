@@ -57,6 +57,7 @@ CREATE TYPE transfer_type AS ENUM (
     );
 
 CREATE TYPE status_type AS ENUM (
+    'CREATED',
     'REGISTERED',
     'PAID',
     'CANCELED'
@@ -67,6 +68,9 @@ CREATE TABLE IF NOT EXISTS users (
 
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
+
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
 
     user_role user_role_type NOT NULL,
 
@@ -102,7 +106,7 @@ CREATE TABLE IF NOT EXISTS vouchers (
     voucher_tour_type tour_type,
     voucher_transfer_type transfer_type,
     voucher_hotel_type hotel_type,
-    voucher_status_type status_type,
+    voucher_status_type status_type DEFAULT 'CREATED',
 
     arrival_date DATE,
     eviction_date DATE,

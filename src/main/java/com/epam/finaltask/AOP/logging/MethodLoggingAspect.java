@@ -22,7 +22,7 @@ public class MethodLoggingAspect {
     @Pointcut("@within(org.springframework.stereotype.Service)")
     public void serviceMethods() {}
 
-    @Pointcut("execution(* com.epam.finaltask.service.AbstractTokenStorage.*(..))")
+    @Pointcut("execution(* com.epam.finaltask.service.impl.AbstractTokenStorage.*(..))")
     public void tokenStorageMethod() {}
 
     @Pointcut("execution(* com.epam.finaltask.util.JwtUtil.*(..)) || execution(* com.epam.finaltask.util.ResetTokenUtil.*(..))")
@@ -35,7 +35,7 @@ public class MethodLoggingAspect {
     public Object logExecutionMethod(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.nanoTime();
 
-        log.info("stage=init-{}, method={}, controller={}, parameters={}",
+        log.info("stage=init-{}, method={}, class={}, parameters={}",
                 joinPoint.getSignature().getName(),
                 joinPoint.getSignature().getName(),
                 joinPoint.getSignature().getDeclaringType().getSimpleName(),
@@ -44,7 +44,7 @@ public class MethodLoggingAspect {
         Object result = joinPoint.proceed();
         long timeElapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
 
-        log.info("stage=finish-{}, method={}, controller={}, parameters={}, result={}, time-execution={}ms",
+        log.info("stage=finish-{}, method={}, class={}, parameters={}, result={}, time-execution={}ms",
                 joinPoint.getSignature().getName(),
                 joinPoint.getSignature().getName(),
                 joinPoint.getSignature().getDeclaringType().getSimpleName(),

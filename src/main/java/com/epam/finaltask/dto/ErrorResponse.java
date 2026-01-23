@@ -21,6 +21,8 @@ public class ErrorResponse {
     private LocalDateTime timestamp;
 
     private String path;
+
+    @Builder.Default
     private UUID traceId = UUID.randomUUID();
 
     private List<ValidationError> validationErrors;

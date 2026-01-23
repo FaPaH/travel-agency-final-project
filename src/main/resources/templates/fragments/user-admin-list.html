@@ -1,0 +1,66 @@
+<div th:fragment="user-list-fragment" id="user-admin-list" class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+        <h3 th:text="#{user.management}">User Management</h3>
+    </div>
+
+    <table class="table table-hover table-bordered shadow-sm bg-white">
+        <thead class="thead-dark">
+        <tr>
+            <th th:text="#{common.id}">ID</th>
+            <th th:text="#{auth.username}">Username</th>
+            <th th:text="#{common.status}">Status</th>
+            <th th:text="#{user.firstname} + '/' + #{user.lastname}">First/Last name</th>
+            <th th:text="#{user.contacts}">Contacts</th>
+            <th th:text="#{user.balance}">Balance</th>
+            <th th:text="#{user.provider}">Provider</th>
+            <th th:text="#{common.actions}">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="u : ${users.getData()}">
+            <tr th:replace="~{:: user-row(user=${u})}"></tr>
+        </th:block>
+
+        <tr th:if="${#lists.isEmpty(users)}">
+            <td colspan="8" class="text-center text-muted">User not found</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<tr th:fragment="user-row(user)" th:id="'user-row-' + ${user.id}">
+    <input type="hidden" name="id" th:value="${user.id}">
+    <input type="hidden" name="username" th:value="${user.username}">
+    <input type="hidden" name="active" th:value="${user.active}">
+    <input type="hidden" name="firstName" th:value="${user.firstName}">
+    <input type="hidden" name="lastName" th:value="${user.lastName}">
+    <input type="hidden" name="phoneNumber" th:value="${user.phoneNumber}">
+    <input type="hidden" name="email" th:value="${user.email}">
+    <input type="hidden" name="balance" th:value="${user.balance}">
+    <input type="hidden" name="authProvider" th:value="${user.authProvider}">
+
+    <td class="small" th:text="${user.id}"></td>
+    <td class="font-weight-bold" th:text="${user.username}"></td>
+    <td>
+        <span th:class="${user.active ? 'badge bg-success' : 'badge bg-danger'}"
+              th:text="${user.active} ? #{user.active} : #{user.blocked}">
+        </span>
+    </td>
+    <td th:text="${user.firstName + ' ' + user.lastName}"></td>
+    <td>
+        <div class="small" th:text="${user.email}"></div>
+        <div class="small text-muted" th:text="${user.phoneNumber}"></div>
+    </td>
+    <td class="text-success font-weight-bold" th:text="${user.balance + ' $'}"></td>
+    <td th:text="${user.authProvider}"></td>
+    <td>
+        <button type="button"
+                th:class="${user.active ? 'btn btn-sm btn-danger w-100' : 'btn btn-sm btn-success w-100'}"
+                th:text="${user.active} ? #{user.block} : #{user.unblock}"
+                th:attr="hx-post=@{/admin/users/toggle-status}"
+                hx-include="closest tr"
+                hx-target="#user-admin-list"
+                hx-swap="outerHTML">
+        </button>
+    </td>
+</tr>

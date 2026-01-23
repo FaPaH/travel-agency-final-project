@@ -16,11 +16,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {"role", "vouchers"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Table(name = "users")
+@ToString
 public class User extends BaseEntity implements UserDetails {
 
     @Id
@@ -32,7 +32,14 @@ public class User extends BaseEntity implements UserDetails {
     private String username;
 
     @Column(name = "password")
+    @ToString.Exclude
     private String password;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
 
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Enumerated(EnumType.STRING)
@@ -41,6 +48,7 @@ public class User extends BaseEntity implements UserDetails {
 
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Column(name = "vouchers")
+    @ToString.Exclude
     private List<Voucher> vouchers;
 
     @Column(name = "phone_number")
@@ -75,7 +83,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return this.active;
     }
 
     @Override
@@ -85,6 +93,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return active;
+        return this.active;
     }
 }

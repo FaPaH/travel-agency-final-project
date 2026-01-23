@@ -1,13 +1,16 @@
 package com.epam.finaltask.config;
 
+import com.epam.finaltask.config.handler.OAuth2AuthenticationSuccessHandler;
 import com.epam.finaltask.filter.JwtAuthenticationFilter;
-import com.epam.finaltask.mapper.UserMapper;
-import com.epam.finaltask.model.User;
+import com.epam.finaltask.filter.LoginAttemptFilter;
+import com.epam.finaltask.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.epam.finaltask.service.*;
+import com.epam.finaltask.service.impl.CustomOAuth2UserService;
+import com.epam.finaltask.config.handler.CustomOAuth2FailureHandler;
+import com.epam.finaltask.util.HtmxAuthenticationEntryPoint;
+import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.JwtUtil;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,16 +23,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -39,12 +41,16 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final LoginAttemptFilter loginAttemptFilter;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final CustomOAuth2UserService oAuth2UserService;
     private final JwtUtil jwtUtil;
-    private final UserMapper userMapper;
     private final TokenStorageService<String> refreshTokenStorageService;
+    private final JwtProperties jwtProperties;
+    private final HtmxAuthenticationEntryPoint htmxAuthenticationEntryPoint;
+    private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -59,54 +65,86 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/auth/reset-password", "/reset-password/confirm").authenticated()
+                        .requestMatchers("/api/auth/**", "/auth/**", "error/error").permitAll()
+                        .requestMatchers("/favicon.ico","/","/index", "/css/**", "/js/**", "/vouchers").permitAll()
+                        .requestMatchers("/api/auth/reset-password", "/auth/reset-password", "/user/**", "/api/user/**").authenticated()
+                        .requestMatchers("/manager/**", "/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(loginAttemptFilter, JwtAuthenticationFilter.class)
+                .formLogin(form -> form
+                        .loginPage("/auth/sign-in")
+                        .loginProcessingUrl("/auth/login-security-check")
+                        .defaultSuccessUrl("/index", true)
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .addLogoutHandler(logoutHandler())
+                        .logoutSuccessHandler(logoutSuccessHandler())
+                        .deleteCookies("JSESSIONID", "jwt_access", "jwt_refresh")
+                        .invalidateHttpSession(true))
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                        )
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService)
                         )
+                        .failureHandler(customOAuth2FailureHandler)
+                        .loginPage("/auth/sign-in")
                         .successHandler(oAuth2AuthenticationSuccessHandler())
+                ).exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(htmxAuthenticationEntryPoint)
                 );
 
         return http.build();
     }
 
     @Bean
-    AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
-        return new AuthenticationSuccessHandler() {
-            @Override
-            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+    LogoutHandler logoutHandler() {
+        return (request, response, authentication) -> {
+            String token = null;
 
-                String email = oAuth2User.getAttribute("email");
-                String username = oAuth2User.getAttribute("login");
-                User user;
+            if (request.getCookies() != null) {
+                token = Arrays.stream(request.getCookies())
+                        .filter(c -> "jwt_access".equals(c.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
 
-                if (email != null) {
-                    user = userMapper.toUser(userService.getUserByEmail(email));
-                } else {
-                    user = userMapper.toUser(userService.getUserByUsername(username));
-                }
-
-                String accessToken = jwtUtil.generateToken(user);
-                String refreshToken = jwtUtil.generateRefreshToken(user);
-
-                refreshTokenStorageService.revoke(user.getId().toString());
-                refreshTokenStorageService.store(user.getId().toString(), refreshToken);
-
-                String targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
-                        .queryParam("accessToken", accessToken)
-                        .queryParam("refreshToken", refreshToken)
-                        .build().toUriString();
-
-                response.sendRedirect(targetUrl);
+            if (token != null) {
+                refreshTokenStorageService.revoke(jwtUtil.extractClaim(token, claims -> claims.get("id", String.class)));
             }
         };
+    }
+
+    @Bean
+    LogoutSuccessHandler logoutSuccessHandler() {
+        return (request, response, authentication) -> {
+            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With")) ||
+                    request.getHeader("HX-Request") != null) {
+
+                response.setHeader("HX-Redirect", "/auth/sign-in?logout");
+            } else {
+                response.sendRedirect("/auth/sign-in?logout");
+            }
+        };
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+        return new OAuth2AuthenticationSuccessHandler(
+                jwtUtil,
+                refreshTokenStorageService,
+                jwtProperties,
+                cookieAuthorizationRequestRepository
+        );
     }
 
     @Bean

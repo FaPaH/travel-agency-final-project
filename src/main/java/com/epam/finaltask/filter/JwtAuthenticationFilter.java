@@ -1,11 +1,14 @@
 package com.epam.finaltask.filter;
 
 import com.epam.finaltask.exception.InvalidTokenException;
+import com.epam.finaltask.mapper.UserMapper;
+import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -23,6 +26,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.thymeleaf.util.StringUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -34,72 +38,60 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
-
-    @Qualifier("handlerExceptionResolver")
-    private final HandlerExceptionResolver resolver;
+    private final UserMapper userMapper;
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        log.info("Starting JWT Authentication Filter");
-
-        String requestPath = request.getServletPath();
-        final String authHeader = request.getHeader(HEADER_NAME);
-        final String jwt;
-        final String username;
+        log.debug("Starting JWT Authentication Filter");
 
         try {
+            String jwt = extractJwtFromRequest(request);
 
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (jwt != null) {
+                String username = jwtUtil.extractUsername(jwt);
 
-                if (requestPath.contains("/api/auth") ||
-                        requestPath.contains("/swagger-ui") ||
-                        requestPath.contains("/v3/api-docs")) {
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    User user = userMapper.toUser(userService.getUserByUsername(username));
 
-                    filterChain.doFilter(request, response);
-                    return;
+                    if (jwtUtil.isTokenValid(jwt, user)) {
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                user.getAuthorities()
+                        );
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        log.debug("User {} successfully authenticated via JWT", username);
+                    }
                 }
-
-                throw new InvalidTokenException("JWT Authentication Filter Skipped");
             }
-
-            jwt = authHeader.substring(BEARER_PREFIX.length());
-            username = jwtUtil.extractUsername(jwt);
-
-            if (!StringUtils.isEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userService
-                        .userDetailsService()
-                        .loadUserByUsername(username);
-
-                log.info("Logged in user: {}", userDetails);
-
-                if (jwtUtil.isTokenValid(jwt, userDetails)) {
-                    SecurityContext context = SecurityContextHolder.getContext();
-
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    context.setAuthentication(authToken);
-                    SecurityContextHolder.setContext(context);
-                } else {
-                    throw new InvalidTokenException("JWT Authentication Filter Skipped");
-                }
-            } else {
-                throw new InvalidTokenException("JWT Authentication Filter Skipped");
-            }
-
-            log.info("JWT Authentication Filter Success for username {}", username);
-            filterChain.doFilter(request, response);
         } catch (Exception e) {
-            resolver.resolveException(request, response, null, e);
+            log.warn("JWT validation failed: {}", e.getMessage());
+
+            SecurityContextHolder.clearContext();
         }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String extractJwtFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader(HEADER_NAME);
+        if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
+            return authHeader.substring(BEARER_PREFIX.length());
+        }
+
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(c -> "jwt_access".equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 }

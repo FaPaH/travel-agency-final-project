@@ -15,5 +15,5 @@ public interface AuthenticationService {
 
     AuthResponse generateTokensAndStore(User user);
 
-    
+    void resetPassword(ResetPasswordRequest resetPasswordRequest);
 }

@@ -1,0 +1,20 @@
+package com.epam.finaltask.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class TopUpRequest {
+
+    @NotNull(message = "{validation.payment.amount.required}")
+    @PositiveOrZero(message = "{validation.payment.amount.positive}")
+    private BigDecimal amount;
+}

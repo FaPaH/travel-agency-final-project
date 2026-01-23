@@ -1,8 +1,10 @@
 package com.epam.finaltask.exception;
 
-public class NotEnoughBalanceException extends RuntimeException {
+import java.math.BigDecimal;
 
-    public NotEnoughBalanceException(String msg) {
-        super(msg);
+public class NotEnoughBalanceException extends LocalizedException {
+
+    public NotEnoughBalanceException(BigDecimal current, BigDecimal required) {
+        super("error.balance.not_enough", current, required);
     }
 }

@@ -90,7 +90,7 @@ You should use and successfully implement next points:
 - `Pagination and sorting`
 - `Other Spring technologies`
 - `Swagger API`
-- `Thymeleaf`
+- `Thymeleaf`[nav-bar.html](src%2Fmain%2Fresources%2Ftemplates%2Ffragments%2Fnav-bar.html)
 
 ## Recommendations
 
@@ -102,3 +102,23 @@ You should use and successfully implement next points:
 
 - Not forget to improvise and try to use different approaches while implementing your solution.
 - Time is limited to 18 hours. Don't waste your time.
+
+## For me
+
+Чекнуть можно ли не правильные почты редиректить и говорить что не могут послать сообщение на такую почту
+Добавить кнопку обновленияя пароля на логин форму и заменять логин форму на ресет при нажатии
+Сделать что работал логин/регистрация как нужно, сделать логаут - готово но перепроверить нужно 
+Сделать профиль где показывает инфу юзера и там же можно изменить данные свои и все его ваучеры с фильтром
+Сделать рабочим ресет пароля
+Сделать менеджер страничку где он может просматривать ваучеры по статусам и менять статус и делать их хот
+    change logic for ordering
+    (when user orders its get register status and manager should paid or cancel voucher,
+    money discharge from account in this event, but checks even in order)
+Сделать админ страничку где он может менять все поля ваучеров
+Сделать кнопку в админ страничке что показывает всех юзеров и фильтр по id email username и рядом кнопку бан
+Добавить ексепшен хендлинг нормальный с бандингами
+Логировать бизнес логику дополнительно
+Юнит тесты
+HTTPS?
+Логин попытки ограничить
+

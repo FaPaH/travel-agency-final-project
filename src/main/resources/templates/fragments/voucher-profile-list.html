@@ -1,0 +1,26 @@
+<div th:fragment="voucher-profile-list-fragment" id="voucher-list">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th scope="col" th:text="#{common.id}">#ID</th>
+            <th scope="col" th:text="#{voucher.title}">Voucher Title</th>
+            <th scope="col" th:text="#{common.description}">Description</th>
+            <th scope="col" th:text="#{common.status}">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr th:each="voucher : ${vouchers.getData()}">
+            <td th:text="${voucher.id}"></td>
+            <td th:text="${voucher.title}"></td>
+            <td th:text="${voucher.description}"></td>
+            <td th:text="${voucher.status}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(vouchers.getData())}">
+            <td colspan="3" th:text="#{voucher.not_found}">There is no vouchers</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:replace="~{fragments/pagination :: pagination-fragment(${vouchers}, '/vouchers/user/__${#authentication.principal.id}__')}"></div>
+</div>

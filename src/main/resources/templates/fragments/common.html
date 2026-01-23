@@ -1,0 +1,23 @@
+<div th:fragment="error-alert-fragment"
+     id="global-error-alert"
+     class="alert alert-danger alert-dismissible fade show fixed-top m-3 shadow"
+     role="alert"
+     style="z-index: 9999;">
+
+    <strong th:text="${errorResponse.error}">Error</strong>
+    <span th:text="${errorResponse.message}">Something went wrong</span>
+
+    <ul th:if="${errorResponse.validationErrors != null}">
+        <li th:each="err : ${errorResponse.validationErrors}"
+            th:text="${err.field} + ': ' + ${err.message}"></li>
+    </ul>
+
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+    <script>
+        setTimeout(() => {
+            const alert = document.getElementById('global-error-alert');
+            if(alert) bootstrap.Alert.getOrCreateInstance(alert).close();
+        }, 5000);
+    </script>
+</div>

@@ -4,7 +4,7 @@ import com.epam.finaltask.model.ResetToken;
 
 public interface ResetService {
 
-    void proceedReset(String email);
+    void proceedReset(String email, boolean isApi);
 
     boolean validateToken(String token);
 

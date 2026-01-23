@@ -1,0 +1,152 @@
+.voucher-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.filter {
+    max-width: 20dvw;
+    height: 80dvh;
+}
+
+.voucher-list {
+    min-width: 60dvw;
+    max-width: 60dvw;
+    height: 80dvh;
+}
+
+#filterPanel {
+    max-width: 20dvw;
+    margin-right: 20px;
+}
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+.star-rating input { display: none; }
+.star-rating label { font-size: 2rem; color: #ddd; cursor: pointer; }
+.star-rating label:before { content: '★'; }
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #ffca08;
+}
+
+.form-switch .form-check-input {
+    width: 2.5em;
+    height: 1.25em;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+.voucher-list-container {
+    min-height: 800px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.filter-sidebar {
+    width: 100%;
+    min-width: 250px;
+}
+
+.table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.error-container {
+    margin-top: 5rem;
+    max-width: 600px;
+}
+.error-code {
+    font-size: 6rem;
+    font-weight: 700;
+    color: #dc3545;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.trace-box {
+    background-color: #e9ecef;
+    border-radius: 5px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.table-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.truncate-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.truncate-cell:hover {
+    background-color: #f8f9fa;
+}
+
+.truncate-cell.expanded {
+    white-space: normal;
+    overflow: visible;
+    word-wrap: break-word;
+}
+
+.id-hover-container .copy-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    visibility: hidden;
+}
+.id-hover-container:hover .copy-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; border-right: 1px solid #ccc; padding: 20px; background-color: #f8f9fa; }
+.main-content { flex-grow: 1; padding: 20px; }
+.nav-btn { display: block; width: 100%; margin-bottom: 10px; text-align: left; }
+.nav-btn.htmx-request { opacity: 0.5; }
+.admin-section { border-bottom: 2px solid #dee2e6; margin-bottom: 15px; padding-bottom: 10px; }
+
+.btn-social { margin-bottom: 10px; width: 100%; text-align: left; padding: 10px 20px; }
+.btn-google { background-color: #db4437; color: white; }
+.btn-github { background-color: #333; color: white; }
+.btn-facebook { background-color: #4267B2; color: white; }
+.divider { display: flex; align-items: center; text-align: center; margin: 20px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #ccc; }
+.divider:not(:empty)::before { margin-right: .25em; }
+.divider:not(:empty)::after { margin-left: .25em; }
+
+.htmx-indicator {
+    display: none;
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+    opacity: 1;
+}
+.htmx-request.htmx-indicator {
+    display: inline-block;
+    opacity: 1;
+}
