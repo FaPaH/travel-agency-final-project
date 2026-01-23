@@ -1,19 +1,16 @@
 package com.epam.finaltask.config;
 
+import com.epam.finaltask.config.handler.OAuth2AuthenticationSuccessHandler;
 import com.epam.finaltask.filter.JwtAuthenticationFilter;
 import com.epam.finaltask.filter.LoginAttemptFilter;
-import com.epam.finaltask.mapper.UserMapper;
-import com.epam.finaltask.model.User;
+import com.epam.finaltask.repository.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.epam.finaltask.service.*;
 import com.epam.finaltask.service.impl.CustomOAuth2UserService;
-import com.epam.finaltask.util.CustomOAuth2FailureHandler;
+import com.epam.finaltask.config.handler.CustomOAuth2FailureHandler;
 import com.epam.finaltask.util.HtmxAuthenticationEntryPoint;
 import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.JwtUtil;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,20 +23,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.savedrequest.DefaultSavedRequest;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,11 +46,11 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
     private final CustomOAuth2UserService oAuth2UserService;
     private final JwtUtil jwtUtil;
-    private final UserMapper userMapper;
     private final TokenStorageService<String> refreshTokenStorageService;
     private final JwtProperties jwtProperties;
     private final HtmxAuthenticationEntryPoint htmxAuthenticationEntryPoint;
     private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -76,8 +67,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**", "/auth/**", "error/error").permitAll()
                         .requestMatchers("/favicon.ico","/","/index", "/css/**", "/js/**", "/vouchers").permitAll()
-                        .requestMatchers("/api/auth/reset-password", "/auth/reset-password", "/user/dashboard", "user/profile/**").authenticated()
-                        .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/api/auth/reset-password", "/auth/reset-password", "/user/**", "/api/user/**").authenticated()
+                        .requestMatchers("/manager/**", "/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -96,6 +88,10 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID", "jwt_access", "jwt_refresh")
                         .invalidateHttpSession(true))
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                        )
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService)
                         )
@@ -111,94 +107,44 @@ public class SecurityConfig {
 
     @Bean
     LogoutHandler logoutHandler() {
-        return new LogoutHandler() {
+        return (request, response, authentication) -> {
+            String token = null;
 
-            @Override
-            public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-                String token = null;
+            if (request.getCookies() != null) {
+                token = Arrays.stream(request.getCookies())
+                        .filter(c -> "jwt_access".equals(c.getName()))
+                        .map(Cookie::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
 
-                if (request.getCookies() != null) {
-                    token = Arrays.stream(request.getCookies())
-                            .filter(c -> "jwt_access".equals(c.getName()))
-                            .map(Cookie::getValue)
-                            .findFirst()
-                            .orElse(null);
-                }
-
-                if (token != null) {
-                    refreshTokenStorageService.revoke(jwtUtil.extractClaim(token, claims -> claims.get("id", String.class)));
-                }
+            if (token != null) {
+                refreshTokenStorageService.revoke(jwtUtil.extractClaim(token, claims -> claims.get("id", String.class)));
             }
         };
     }
 
     @Bean
     LogoutSuccessHandler logoutSuccessHandler() {
-        return new LogoutSuccessHandler() {
+        return (request, response, authentication) -> {
+            if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With")) ||
+                    request.getHeader("HX-Request") != null) {
 
-            @Override
-            public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-                if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With")) ||
-                        request.getHeader("HX-Request") != null) {
-
-                    response.setHeader("HX-Redirect", "/auth/sign-in?logout");
-                } else {
-                    response.sendRedirect("/auth/sign-in?logout");
-                }
+                response.setHeader("HX-Redirect", "/auth/sign-in?logout");
+            } else {
+                response.sendRedirect("/auth/sign-in?logout");
             }
         };
     }
 
     @Bean
-    AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
-        return new AuthenticationSuccessHandler() {
-            @Override
-            public void onAuthenticationSuccess(HttpServletRequest request,
-                                                HttpServletResponse response,
-                                                Authentication authentication)
-                    throws IOException, ServletException {
-                OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-
-                String email = oAuth2User.getAttribute("email");
-                String username = oAuth2User.getAttribute("login");
-                User user;
-                String clientType = request.getParameter("client_type");
-
-                DefaultSavedRequest savedRequest = (DefaultSavedRequest) new HttpSessionRequestCache()
-                        .getRequest(request, response);
-
-                if (email != null) {
-                    user = userMapper.toUser(userService.getUserByEmail(email));
-                } else {
-                    user = userMapper.toUser(userService.getUserByUsername(username));
-                }
-
-                String accessToken = jwtUtil.generateAccessToken(user);
-                String refreshToken = jwtUtil.generateRefreshToken(user);
-
-                refreshTokenStorageService.revoke(user.getId().toString());
-                refreshTokenStorageService.store(user.getId().toString(), refreshToken);
-
-                String targetUrl = "/";
-
-                if (clientType != null) {
-                    String originalUrl = savedRequest.getRedirectUrl();
-
-                    if (originalUrl.contains("localhost:8080")) {
-                        targetUrl = UriComponentsBuilder.fromUriString("/api/auth/oauth2/success")
-                                .queryParam("accessToken", accessToken)
-                                .queryParam("refreshToken", refreshToken)
-                                .build().toUriString();
-                    }
-
-                    response.sendRedirect(targetUrl);
-                } else {
-                    saveTokensToCookies(response, accessToken, refreshToken);
-
-                    response.sendRedirect("/");
-                }
-            }
-        };
+    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+        return new OAuth2AuthenticationSuccessHandler(
+                jwtUtil,
+                refreshTokenStorageService,
+                jwtProperties,
+                cookieAuthorizationRequestRepository
+        );
     }
 
     @Bean
@@ -213,20 +159,5 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    private void saveTokensToCookies(HttpServletResponse response, String access, String refresh) {
-        Cookie aCookie = new Cookie("jwt_access", access);
-        aCookie.setHttpOnly(true);
-        aCookie.setPath("/");
-        aCookie.setMaxAge((int) jwtProperties.getExpiration());
-
-        Cookie rCookie = new Cookie("jwt_refresh", refresh);
-        rCookie.setHttpOnly(true);
-        rCookie.setPath("/auth/refresh");
-        rCookie.setMaxAge((int) jwtProperties.getRefreshToken().getExpiration());
-
-        response.addCookie(aCookie);
-        response.addCookie(rCookie);
     }
 }

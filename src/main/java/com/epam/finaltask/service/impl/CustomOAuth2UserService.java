@@ -8,7 +8,6 @@ import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.util.factory.oauth2factory.OAuth2UserInfo;
 import com.epam.finaltask.util.factory.oauth2factory.OAuth2UserInfoFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +17,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.util.StringUtils;
 
 import java.util.UUID;
 

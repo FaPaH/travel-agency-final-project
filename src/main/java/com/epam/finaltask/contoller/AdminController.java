@@ -33,9 +33,9 @@ public class AdminController {
     }
 
     @GetMapping("/vouchers")
-    public String getVouchersAdmin(Model model,
-                                   AdminVoucherFilterRequest filterRequest,
-                                   @PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public String getAdminFilteredVouchers(Model model,
+                                           AdminVoucherFilterRequest filterRequest,
+                                           @PageableDefault(size = 10, page = 0) Pageable pageable) {
 
         model.addAttribute("vouchers", voucherService.findWithFilers(filterRequest, pageable));
 

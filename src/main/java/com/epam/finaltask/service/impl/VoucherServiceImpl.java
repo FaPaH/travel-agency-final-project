@@ -12,7 +12,6 @@ import com.epam.finaltask.repository.VoucherRepository;
 import com.epam.finaltask.repository.specification.VoucherSpecifications;
 import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.service.VoucherService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,8 +29,6 @@ import java.util.UUID;
 @Transactional
 @Slf4j
 public class VoucherServiceImpl implements VoucherService {
-
-    //TODO: integrate exceptions which are not in the ex handlers
 
     private final VoucherRepository voucherRepository;
     private final VoucherMapper voucherMapper;

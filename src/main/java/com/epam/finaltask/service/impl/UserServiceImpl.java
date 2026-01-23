@@ -11,7 +11,6 @@ import com.epam.finaltask.model.User;
 import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.service.UserService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -7,13 +7,11 @@ import com.epam.finaltask.service.AuthenticationService;
 import com.epam.finaltask.service.ResetService;
 import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.util.JwtProperties;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -22,6 +20,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+
+import static com.epam.finaltask.util.CookieUtils.addCookie;
+import static com.epam.finaltask.util.CookieUtils.deleteCookie;
 
 @Controller
 @RequestMapping("/auth")
@@ -63,7 +64,8 @@ public class AuthenticationController {
 
         AuthResponse authResponse = authenticationService.register(registerRequest);
 
-        saveTokensToCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
+        addCookie(response, "jwt_access", "/", authResponse.getAccessToken(), (int) jwtProperties.getExpiration());
+        addCookie(response, "jwt_refresh", "/auth/refresh", authResponse.getAccessToken(), (int) jwtProperties.getExpiration());
 
         response.setHeader("HX-Redirect", "/index");
         return null;
@@ -86,7 +88,9 @@ public class AuthenticationController {
 
             attemptService.clearBlocked(getClientIP(request));
 
-            saveTokensToCookies(response, authResponse.getAccessToken(), authResponse.getRefreshToken());
+            addCookie(response, "jwt_access", "/", authResponse.getAccessToken(), (int) jwtProperties.getExpiration());
+            addCookie(response, "jwt_refresh", "/auth/refresh", authResponse.getAccessToken(), (int) jwtProperties.getExpiration());
+
             response.setHeader("HX-Redirect", "/index");
             return null;
 
@@ -158,9 +162,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/reset-password/confirm")
-    public String confirmReset(@ModelAttribute("resetPasswordRequest") @Valid ResetPasswordRequest request,
+    public String confirmReset(@ModelAttribute("resetPasswordRequest") @Valid ResetPasswordRequest resetRequest,
                                BindingResult bindingResult,
                                HttpServletResponse response,
+                               HttpServletRequest request,
                                Model model) {
 
         if (bindingResult.hasErrors()) {
@@ -172,48 +177,18 @@ public class AuthenticationController {
             return "auth/reset-password :: reset-password-final";
         }
 
-        if(!resetService.validateToken(request.getToken())) {
+        if(!resetService.validateToken(resetRequest.getToken())) {
             response.setHeader("HX-Redirect", "/auth/sign-in?error=invalid_token");
             return null;
         }
 
-        authenticationService.resetPassword(request);
-        resetCookies(response);
+        authenticationService.resetPassword(resetRequest);
+
+        deleteCookie(request, response, "jwt_access");
+        deleteCookie(request, response, "jwt_refresh");
 
         response.setHeader("HX-Redirect", "/auth/sign-in?resetSuccess=true");
         return null;
-    }
-
-    private void saveTokensToCookies(HttpServletResponse response,
-                                     String access,
-                                     String refresh) {
-
-        Cookie aCookie = new Cookie("jwt_access", access);
-        aCookie.setHttpOnly(true);
-        aCookie.setPath("/");
-        aCookie.setMaxAge((int) jwtProperties.getExpiration());
-
-        Cookie rCookie = new Cookie("jwt_refresh", refresh);
-        rCookie.setHttpOnly(true);
-        rCookie.setPath("/auth/refresh");
-        rCookie.setMaxAge((int) jwtProperties.getRefreshToken().getExpiration());
-
-        response.addCookie(aCookie);
-        response.addCookie(rCookie);
-    }
-
-    private void resetCookies(HttpServletResponse response) {
-
-        Cookie aCookie = new Cookie("jwt_access", null);
-        aCookie.setPath("/");
-        aCookie.setMaxAge(0);
-
-        Cookie rCookie = new Cookie("jwt_refresh", null);
-        rCookie.setPath("/");
-        rCookie.setMaxAge(0);
-
-        response.addCookie(aCookie);
-        response.addCookie(rCookie);
     }
 
     private String getClientIP(HttpServletRequest request) {

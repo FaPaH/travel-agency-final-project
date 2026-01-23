@@ -1,4 +1,4 @@
-package com.epam.finaltask.util;
+package com.epam.finaltask.config.handler;
 
 import com.epam.finaltask.dto.ErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
