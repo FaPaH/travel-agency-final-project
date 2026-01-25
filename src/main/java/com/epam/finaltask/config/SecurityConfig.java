@@ -64,6 +64,9 @@ public class SecurityConfig {
                     corsConfiguration.setAllowCredentials(true);
                     return corsConfiguration;
                 }))
+                .requiresChannel(channel -> channel
+                        .anyRequest().requiresSecure()
+                )
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**", "/auth/**", "error/error").permitAll()
                         .requestMatchers("/favicon.ico","/","/index", "/css/**", "/js/**", "/vouchers").permitAll()
