@@ -28,7 +28,8 @@ class AbstractTokenStorageTest {
     @BeforeEach
     void setUp() {
         lenient().when(cacheManager.getCache("test_cache")).thenReturn(cache);
-        storage = new AbstractTokenStorage<>(cacheManager, "test_cache", String.class) {};
+        storage = new AbstractTokenStorage<>(cacheManager, "test_cache", String.class) {
+        };
     }
 
     @Test
@@ -38,7 +39,8 @@ class AbstractTokenStorageTest {
         when(cacheManager.getCache("non_existent")).thenReturn(null);
 
         // Act & Assert
-        assertThatThrownBy(() -> new AbstractTokenStorage<>(cacheManager, "non_existent", String.class) {})
+        assertThatThrownBy(() -> new AbstractTokenStorage<>(cacheManager, "non_existent", String.class) {
+        })
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Cache non_existent not found");
     }

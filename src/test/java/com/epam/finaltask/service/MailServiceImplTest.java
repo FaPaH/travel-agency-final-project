@@ -1,7 +1,6 @@
 package com.epam.finaltask.service;
 
 import com.epam.finaltask.service.impl.MailServiceImpl;
-import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;

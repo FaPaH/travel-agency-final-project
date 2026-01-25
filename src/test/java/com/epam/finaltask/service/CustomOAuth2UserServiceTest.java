@@ -123,7 +123,6 @@ class CustomOAuth2UserServiceTest {
         UserPrincipal userPrincipal = (UserPrincipal) result;
         assertThat(userPrincipal.getUser().getEmail()).isEqualTo(email);
 
-        // Verify User creation logic
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
 

@@ -30,8 +30,8 @@ public class EnumValidatorConstraint implements ConstraintValidator<EnumValidato
         if (!isValid) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(
-                    context.getDefaultConstraintMessageTemplate()
-                            .replace("{allowedValues}", String.join(", ", values)))
+                            context.getDefaultConstraintMessageTemplate()
+                                    .replace("{allowedValues}", String.join(", ", values)))
                     .addConstraintViolation();
         }
 

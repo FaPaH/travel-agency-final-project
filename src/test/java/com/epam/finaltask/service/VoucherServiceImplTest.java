@@ -36,13 +36,19 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class VoucherServiceImplTest {
 
-    @Mock private VoucherRepository voucherRepository;
-    @Mock private VoucherMapper voucherMapper;
-    @Mock private UserRepository userRepository;
-    @Mock private TokenStorageService<VoucherPaginatedResponse> voucherPageStorage;
-    @Mock private TokenStorageService<UserDTO> userTokenStorageService;
+    @Mock
+    private VoucherRepository voucherRepository;
+    @Mock
+    private VoucherMapper voucherMapper;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private TokenStorageService<VoucherPaginatedResponse> voucherPageStorage;
+    @Mock
+    private TokenStorageService<UserDTO> userTokenStorageService;
 
-    @InjectMocks private VoucherServiceImpl voucherService;
+    @InjectMocks
+    private VoucherServiceImpl voucherService;
 
     @BeforeEach
     void setUp() {
@@ -273,7 +279,7 @@ class VoucherServiceImplTest {
         when(voucherMapper.toVoucherDTO(voucher)).thenReturn(new VoucherDTO());
 
         VoucherStatusRequest request = new VoucherStatusRequest();
-        request.setIsHot(true); // Status is null
+        request.setIsHot(true);
 
         voucherService.changeStatus(vid.toString(), request);
 

@@ -81,10 +81,12 @@
                 <div class="col-12">
                     <label class="fw-bold small mb-1" th:text="#{filter.price_range}">Price range:</label>
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-light border-end-0" th:text="#{filter.placeholder.from}">From</span>
+                        <span class="input-group-text bg-light border-end-0"
+                              th:text="#{filter.placeholder.from}">From</span>
                         <input type="number" name="minPrice" class="form-control" placeholder="0">
                         <span class="input-group-text bg-light border-start-0 border-end-0">-</span>
-                        <span class="input-group-text bg-light border-end-0" th:text="#{filter.placeholder.to}">To</span>
+                        <span class="input-group-text bg-light border-end-0"
+                              th:text="#{filter.placeholder.to}">To</span>
                         <input type="number" name="maxPrice" class="form-control" placeholder="Max">
                     </div>
                 </div>
@@ -120,7 +122,7 @@
                             <label class="fw-bold small mb-1 d-block" th:text="#{voucher.hotel_type}">Stars:</label>
                             <div class="star-rating">
                                 <th:block th:each="type : ${T(com.epam.finaltask.model.HotelType).values()}">
-                                    <input type="radio" th:id="${'star-' + type}" name="hotels" th:value="${type}" />
+                                    <input type="radio" th:id="${'star-' + type}" name="hotels" th:value="${type}"/>
                                     <label th:for="${'star-' + type}"></label>
                                 </th:block>
                             </div>

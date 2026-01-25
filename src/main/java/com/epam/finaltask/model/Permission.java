@@ -3,6 +3,7 @@ package com.epam.finaltask.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum Permission {
 
@@ -16,6 +17,5 @@ public enum Permission {
     USER_CREATE("user:create"),
     USER_DELETE("user:delete");
 
-    @Getter
     private final String permission;
 }

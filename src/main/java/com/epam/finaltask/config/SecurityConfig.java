@@ -1,12 +1,13 @@
 package com.epam.finaltask.config;
 
+import com.epam.finaltask.config.handler.CustomOAuth2FailureHandler;
 import com.epam.finaltask.config.handler.OAuth2AuthenticationSuccessHandler;
 import com.epam.finaltask.filter.JwtAuthenticationFilter;
 import com.epam.finaltask.filter.LoginAttemptFilter;
 import com.epam.finaltask.repository.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.epam.finaltask.service.*;
+import com.epam.finaltask.service.TokenStorageService;
+import com.epam.finaltask.service.UserService;
 import com.epam.finaltask.service.impl.CustomOAuth2UserService;
-import com.epam.finaltask.config.handler.CustomOAuth2FailureHandler;
 import com.epam.finaltask.util.HtmxAuthenticationEntryPoint;
 import com.epam.finaltask.util.JwtProperties;
 import com.epam.finaltask.util.JwtUtil;
@@ -69,7 +70,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/api/auth/**", "/auth/**", "error/error").permitAll()
-                        .requestMatchers("/favicon.ico","/","/index", "/css/**", "/js/**", "/vouchers").permitAll()
+                        .requestMatchers("/favicon.ico", "/", "/index", "/css/**", "/js/**", "/vouchers").permitAll()
                         .requestMatchers("/api/auth/reset-password", "/auth/reset-password", "/user/**", "/api/user/**").authenticated()
                         .requestMatchers("/manager/**", "/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")

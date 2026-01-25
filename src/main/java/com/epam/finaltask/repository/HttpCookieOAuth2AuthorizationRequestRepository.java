@@ -33,7 +33,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository implements Authoriza
 
         String clientType = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         if (StringUtils.isNotBlank(clientType)) {
-            CookieUtils.addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME,"/", clientType, cookieExpireSeconds);
+            CookieUtils.addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME, "/", clientType, cookieExpireSeconds);
         }
     }
 

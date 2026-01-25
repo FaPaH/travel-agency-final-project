@@ -3,11 +3,16 @@
     <div id="profile-container">
         <div class="card p-3" id="profile-details">
             <p><strong th:text="#{common.id} + ':'">ID:</strong> <span th:text="${user.id}">1</span></p>
-            <p><strong th:text="#{auth.username} + ':'">Username:</strong> <span th:text="${user.username}">admin</span></p>
-            <p><strong th:text="#{user.firstname} + ':'">First Name:</strong> <span th:text="${user.firstName} ?: #{user.not_specified}">1</span></p>
-            <p><strong th:text="#{user.lastname} + ':'">Last Name:</strong> <span th:text="${user.lastName} ?: #{user.not_specified}">admin</span></p>
-            <p><strong th:text="#{user.phone} + ':'">Phone Number:</strong> <span th:text="${user.phoneNumber} ?: #{user.not_specified}"></span></p>
-            <p><strong th:text="#{user.email} + ':'">Email:</strong> <span th:text="${user.email} ?: #{user.not_specified}"></span></p>
+            <p><strong th:text="#{auth.username} + ':'">Username:</strong> <span th:text="${user.username}">admin</span>
+            </p>
+            <p><strong th:text="#{user.firstname} + ':'">First Name:</strong> <span
+                    th:text="${user.firstName} ?: #{user.not_specified}">1</span></p>
+            <p><strong th:text="#{user.lastname} + ':'">Last Name:</strong> <span
+                    th:text="${user.lastName} ?: #{user.not_specified}">admin</span></p>
+            <p><strong th:text="#{user.phone} + ':'">Phone Number:</strong> <span
+                    th:text="${user.phoneNumber} ?: #{user.not_specified}"></span></p>
+            <p><strong th:text="#{user.email} + ':'">Email:</strong> <span
+                    th:text="${user.email} ?: #{user.not_specified}"></span></p>
 
             <button class="btn btn-sm btn-outline-primary"
                     th:attr="hx-get=@{/user/profile/{id}/edit(id=${user.id})}"
@@ -65,7 +70,8 @@
 
 <div th:fragment="profile-balance-fragment" id="profile-balance-wrapper">
     <div class="card p-3" id="profile-balance-details">
-        <p><strong th:text="#{user.balance.current}">Current Balance:</strong> <span th:text="${user.balance}">0.00</span></p>
+        <p><strong th:text="#{user.balance.current}">Current Balance:</strong> <span
+                th:text="${user.balance}">0.00</span></p>
     </div>
 
     <div id="top-up-container">

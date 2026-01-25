@@ -64,7 +64,8 @@
                         <option th:each="type : ${T(com.epam.finaltask.model.TourType).values()}"
                                 th:value="${type}" th:text="${type}"></option>
                     </select>
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('tourType')}" th:errors="*{tourType}"></div>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('tourType')}"
+                         th:errors="*{tourType}"></div>
                 </div>
                 <div class="col-md-4 form-group">
                     <label th:text="#{voucher.hotel_type}">Hotel Type</label>
@@ -73,7 +74,8 @@
                         <option th:each="type : ${T(com.epam.finaltask.model.HotelType).values()}"
                                 th:value="${type}" th:text="${type}"></option>
                     </select>
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('hotelType')}" th:errors="*{hotelType}"></div>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('hotelType')}"
+                         th:errors="*{hotelType}"></div>
                 </div>
                 <div class="col-md-4 form-group">
                     <label th:text="#{voucher.transfer_type}">Transfer Type</label>
@@ -82,7 +84,8 @@
                         <option th:each="type : ${T(com.epam.finaltask.model.TransferType).values()}"
                                 th:value="${type}" th:text="${type}"></option>
                     </select>
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('transferType')}" th:errors="*{transferType}"></div>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('transferType')}"
+                         th:errors="*{transferType}"></div>
                 </div>
             </div>
 
@@ -91,7 +94,8 @@
                 <textarea th:field="*{description}" class="form-control"
                           th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'">
                 </textarea>
-                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}"
+                     th:errors="*{description}"></div>
             </div>
 
             <div class="row">
@@ -99,20 +103,23 @@
                     <label th:text="#{voucher.arrive_date}">Arrival Date</label>
                     <input type="date" th:field="*{arrivalDate}" class="form-control"
                            th:classappend="${#fields.hasErrors('arrivalDate')} ? 'is-invalid'">
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('arrivalDate')}" th:errors="*{arrivalDate}"></div>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('arrivalDate')}"
+                         th:errors="*{arrivalDate}"></div>
                 </div>
                 <div class="col-md-4 form-group">
                     <label th:text="#{voucher.eviction_date}">Eviction Date</label>
                     <input type="date" th:field="*{evictionDate}" class="form-control"
                            th:classappend="${#fields.hasErrors('evictionDate')} ? 'is-invalid'">
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('evictionDate')}" th:errors="*{evictionDate}"></div>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('evictionDate')}"
+                         th:errors="*{evictionDate}"></div>
                 </div>
                 <div class="col-md-4 form-group mt-4">
                     <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input"
                                th:field="*{isHot}"
                                th:id="'hot-' + ${voucher.id}">
-                        <label class="custom-control-label" th:for="'hot-' + ${voucher.id}" th:text="'🔥 ' + #{voucher.hot_label}">🔥 Hot Voucher</label>
+                        <label class="custom-control-label" th:for="'hot-' + ${voucher.id}"
+                               th:text="'🔥 ' + #{voucher.hot_label}">🔥 Hot Voucher</label>
                     </div>
                 </div>
             </div>
@@ -129,7 +136,8 @@
                         th:attr="hx-get=@{/admin/row/{id}(id=${voucher.id})}"
                         th:hx-target="'#voucher-row-' + ${voucher.id}"
                         hx-swap="outerHTML"
-                        th:text="#{common.cancel}">Cancel</button>
+                        th:text="#{common.cancel}">Cancel
+                </button>
             </div>
         </form>
     </td>
@@ -173,13 +181,15 @@
                 <div class="row">
                     <div class="col-md-8 mb-3">
                         <label class="form-label fw-bold" th:text="#{voucher.name}">Voucher name</label>
-                        <input type="text" th:field="*{title}" class="form-control" th:placeholder="#{voucher.name.placeholder}" required
+                        <input type="text" th:field="*{title}" class="form-control"
+                               th:placeholder="#{voucher.name.placeholder}" required
                                th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold" th:text="#{common.price}">Price (USD)</label>
-                        <input type="number" th:field="*{price}" class="form-control" step="0.01" th:placeholder="#{voucher.price.placeholder}" required
+                        <input type="number" th:field="*{price}" class="form-control" step="0.01"
+                               th:placeholder="#{voucher.price.placeholder}" required
                                th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
                     </div>
@@ -187,9 +197,11 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-bold" th:text="#{common.description}">Description</label>
-                    <textarea th:field="*{description}" class="form-control" rows="3" th:placeholder="#{voucher.desc.placeholder}"
+                    <textarea th:field="*{description}" class="form-control" rows="3"
+                              th:placeholder="#{voucher.desc.placeholder}"
                               th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"></textarea>
-                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}"
+                         th:errors="*{description}"></div>
                 </div>
 
                 <div class="row">
@@ -200,7 +212,8 @@
                             <option th:each="type : ${T(com.epam.finaltask.model.TourType).values()}"
                                     th:value="${type}" th:text="${type}"></option>
                         </select>
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('tourType')}" th:errors="*{tourType}"></div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('tourType')}"
+                             th:errors="*{tourType}"></div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold" th:text="#{voucher.hotel_type}">Hotel type</label>
@@ -209,7 +222,8 @@
                             <option th:each="type : ${T(com.epam.finaltask.model.HotelType).values()}"
                                     th:value="${type}" th:text="${type}"></option>
                         </select>
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('hotelType')}" th:errors="*{hotelType}"></div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('hotelType')}"
+                             th:errors="*{hotelType}"></div>
 
                     </div>
                     <div class="col-md-4 mb-3">
@@ -219,7 +233,8 @@
                             <option th:each="type : ${T(com.epam.finaltask.model.TransferType).values()}"
                                     th:value="${type}" th:text="${type}"></option>
                         </select>
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('transferType')}" th:errors="*{transferType}"></div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('transferType')}"
+                             th:errors="*{transferType}"></div>
                     </div>
                 </div>
 
@@ -228,20 +243,23 @@
                         <label class="form-label fw-bold" th:text="#{voucher.arrive_date}">Arrive date</label>
                         <input type="date" th:field="*{arrivalDate}" class="form-control" required
                                th:classappend="${#fields.hasErrors('arrivalDate')} ? 'is-invalid'">
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('arrivalDate')}" th:errors="*{arrivalDate}"></div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('arrivalDate')}"
+                             th:errors="*{arrivalDate}"></div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold" th:text="#{voucher.eviction_date}">Eviction date</label>
                         <input type="date" th:field="*{evictionDate}" class="form-control" required
                                th:classappend="${#fields.hasErrors('evictionDate')} ? 'is-invalid'">
-                        <div class="invalid-feedback" th:if="${#fields.hasErrors('evictionDate')}" th:errors="*{evictionDate}"></div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('evictionDate')}"
+                             th:errors="*{evictionDate}"></div>
                     </div>
                     <div class="col-md-4 mb-3 d-flex align-items-end p-2">
                         <div class="form-check form-switch p-0" style="margin-left: 30px;">
                             <input class="form-check-input shadow-none" type="checkbox"
                                    name="isHot" value="true" id="isHotCreate"
                                    style="width: 40px; height: 20px;">
-                            <label class="form-check-label fw-bold text-danger ms-2" for="isHotCreate" th:text="'🔥 ' + #{voucher.hot}">🔥 Hot</label>
+                            <label class="form-check-label fw-bold text-danger ms-2" for="isHotCreate"
+                                   th:text="'🔥 ' + #{voucher.hot}">🔥 Hot</label>
                             <input type="hidden" name="isHot" value="false">
                         </div>
                     </div>

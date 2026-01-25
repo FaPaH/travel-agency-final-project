@@ -11,7 +11,10 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = DateRangeValidator.class)
 @Documented
 public @interface ValidDateRange {
+
     String message() default "Eviction date must be after arrival date";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

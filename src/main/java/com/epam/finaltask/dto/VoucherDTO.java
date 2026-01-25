@@ -27,7 +27,7 @@ public class VoucherDTO {
 
     @ToString.Include
     @Pattern(regexp = "^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
-                message = "{validation.voucher.id.format}")
+            message = "{validation.voucher.id.format}")
     private String id;
 
     @NotBlank(message = "{validation.voucher.title.required}")

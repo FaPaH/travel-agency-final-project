@@ -13,7 +13,10 @@ import java.lang.annotation.*;
 public @interface EnumValidator {
 
     Class<? extends Enum<?>> enumClass();
+
     String message() default "Invalid value. Must be one of {allowedValues}";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

@@ -1,7 +1,10 @@
 package com.epam.finaltask.dto;
 
 import com.epam.finaltask.model.VoucherStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
