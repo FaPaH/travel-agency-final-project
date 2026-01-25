@@ -1,10 +1,6 @@
 package com.epam.finaltask.service;
 
-import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
-import com.epam.finaltask.dto.VoucherFilerRequest;
-import com.epam.finaltask.dto.VoucherStatusRequest;
-import com.epam.finaltask.dto.VoucherDTO;
-import com.epam.finaltask.model.*;
+import com.epam.finaltask.dto.*;
 import org.springframework.data.domain.Pageable;
 
 public interface VoucherService {

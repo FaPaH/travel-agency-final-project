@@ -119,7 +119,7 @@ public class VoucherServiceImpl implements VoucherService {
                     () -> new ResourceNotFoundException("Voucher", id)
             );
 
-//            User user = voucher.getUser();
+            User user = voucher.getUser();
 
             if (statusRequest.getVoucherStatus() != null) {
                 switch (VoucherStatus.valueOf(statusRequest.getVoucherStatus())) {
@@ -128,22 +128,15 @@ public class VoucherServiceImpl implements VoucherService {
                         voucherRepository.save(voucher);
 
                         break;
-//                    case PAID:
-//                        BigDecimal newBalance = user.getBalance().subtract(voucher.getPrice());
-//
-//                        if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-//                            throw new NotEnoughBalanceException("Not enough balance");
-//                        }
-//
-//                        user.setBalance(newBalance);
-//                        userRepository.save(user);
-//
-//                        break;
-//                    case CANCELED:
-//                        user.setBalance(user.getBalance().add(voucher.getPrice()));
-//                        userRepository.save(user);
-//
-//                        break;
+                    case CANCELED:
+                        if (user != null) {
+                            user.setBalance(user.getBalance().add(voucher.getPrice()));
+                            voucher.setUser(null);
+                            userTokenStorageService.revoke(user.getId().toString());
+                            userRepository.save(user);
+                        }
+
+                        break;
                 }
                 voucher.setStatus(VoucherStatus.valueOf(statusRequest.getVoucherStatus()));
             }

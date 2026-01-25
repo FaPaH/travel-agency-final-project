@@ -2,7 +2,7 @@ package com.epam.finaltask.mapper;
 
 import com.epam.finaltask.dto.VoucherDTO;
 import com.epam.finaltask.dto.PaginatedResponse;
-import com.epam.finaltask.model.VoucherPaginatedResponse;
+import com.epam.finaltask.dto.VoucherPaginatedResponse;
 import org.springframework.data.domain.Page;
 
 public class PaginationMapper {
