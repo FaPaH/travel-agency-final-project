@@ -147,7 +147,7 @@ public class AuthenticationController {
     public String showResetForm(@RequestParam("token") String token,
                                 Model model) {
 
-        if(!resetService.validateToken(token)) {
+        if (!resetService.validateToken(token)) {
             model.addAttribute("error", "The reset link is invalid or has expired.");
             return "auth/reset-password";
         }
@@ -177,7 +177,7 @@ public class AuthenticationController {
             return "auth/reset-password :: reset-password-final";
         }
 
-        if(!resetService.validateToken(resetRequest.getToken())) {
+        if (!resetService.validateToken(resetRequest.getToken())) {
             response.setHeader("HX-Redirect", "/auth/sign-in?error=invalid_token");
             return null;
         }

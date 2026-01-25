@@ -1,6 +1,7 @@
 package com.epam.finaltask.contoller;
 
-import com.epam.finaltask.dto.*;
+import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
+import com.epam.finaltask.dto.VoucherFilerRequest;
 import com.epam.finaltask.model.User;
 import com.epam.finaltask.service.VoucherService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 import java.util.UUID;
 
 @Controller

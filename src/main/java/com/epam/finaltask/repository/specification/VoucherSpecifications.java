@@ -3,7 +3,8 @@ package com.epam.finaltask.repository.specification;
 import com.epam.finaltask.dto.AdminVoucherFilterRequest;
 import com.epam.finaltask.dto.PersonalVoucherFilterRequest;
 import com.epam.finaltask.dto.VoucherFilerRequest;
-import com.epam.finaltask.model.*;
+import com.epam.finaltask.model.Voucher;
+import com.epam.finaltask.model.VoucherStatus;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -54,15 +55,13 @@ public class VoucherSpecifications {
                 } else {
                     query.orderBy(cb.desc(root.get("price")));
                 }
-            }
-            else if ("title".equalsIgnoreCase(field)) {
+            } else if ("title".equalsIgnoreCase(field)) {
                 if (isAsc) {
                     query.orderBy(cb.asc(root.get("title")));
                 } else {
                     query.orderBy(cb.desc(root.get("title")));
                 }
-            }
-            else {
+            } else {
                 if (filter instanceof AdminVoucherFilterRequest) {
                     query.orderBy(
                             cb.desc(root.get("isHot")),

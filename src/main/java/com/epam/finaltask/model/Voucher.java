@@ -1,16 +1,16 @@
 package com.epam.finaltask.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -20,7 +20,7 @@ import org.hibernate.type.SqlTypes;
 @NoArgsConstructor
 @Builder
 @Table(name = "vouchers")
-public class Voucher extends BaseEntity{
+public class Voucher extends BaseEntity {
 
     @Id
     @Column(name = "id")

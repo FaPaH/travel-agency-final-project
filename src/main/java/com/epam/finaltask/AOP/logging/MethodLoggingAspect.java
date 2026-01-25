@@ -17,21 +17,26 @@ import java.util.concurrent.TimeUnit;
 public class MethodLoggingAspect {
 
     @Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
-    public void restControllerMethods() {}
+    public void restControllerMethods() {
+    }
 
     @Pointcut("@within(org.springframework.stereotype.Service)")
-    public void serviceMethods() {}
+    public void serviceMethods() {
+    }
 
     @Pointcut("execution(* com.epam.finaltask.service.impl.AbstractTokenStorage.*(..))")
-    public void tokenStorageMethod() {}
+    public void tokenStorageMethod() {
+    }
 
     @Pointcut("execution(* com.epam.finaltask.util.JwtUtil.*(..)) || execution(* com.epam.finaltask.util.ResetTokenUtil.*(..))")
-    public void jwtTokenMethod() {}
+    public void jwtTokenMethod() {
+    }
 
     @Pointcut("restControllerMethods() || serviceMethods() || tokenStorageMethod() || jwtTokenMethod()")
-    public void applicationPackagePointcut() {}
+    public void applicationPackagePointcut() {
+    }
 
-    @Around("applicationPackagePointcut()" )
+    @Around("applicationPackagePointcut()")
     public Object logExecutionMethod(ProceedingJoinPoint joinPoint) throws Throwable {
         long start = System.nanoTime();
 

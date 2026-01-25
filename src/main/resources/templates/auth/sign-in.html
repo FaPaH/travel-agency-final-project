@@ -16,7 +16,8 @@
     <div class="row justify-content-center">
 
         <div th:if="${param.logout}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong th:text="#{common.ready}">Ready!</strong> <span th:text="#{auth.logout.success}">You are logged out</span>
+            <strong th:text="#{common.ready}">Ready!</strong> <span
+                th:text="#{auth.logout.success}">You are logged out</span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
@@ -30,7 +31,7 @@
             <div class="card shadow p-4">
                 <h2 class="text-center mb-4" th:text="#{auth.login.header}">Login</h2>
 
-                <div  id="login-container">
+                <div id="login-container">
                     <form th:fragment="login-form"
                           th:attr="hx-post=@{/auth/perform_login}"
                           hx-target="#login-container"
@@ -47,7 +48,8 @@
                                    th:field="*{username}"
                                    th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'"
                                    th:placeholder="#{auth.username.placeholder}">
-                            <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}"
+                                 th:errors="*{username}"></div>
                         </div>
 
                         <div class="form-group mb-3">
@@ -56,17 +58,22 @@
                                    th:field="*{password}"
                                    th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'"
                                    th:placeholder="#{auth.password.placeholder}">
-                            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+                                 th:errors="*{password}"></div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100" th:text="#{auth.login.signin_btn}">Sign In</button>
+                        <button type="submit" class="btn btn-primary w-100" th:text="#{auth.login.signin_btn}">Sign In
+                        </button>
                     </form>
                 </div>
                 <div class="divider text-center my-3" th:text="#{auth.login.or}">OR</div>
                 <div class="social-login d-grid gap-2">
-                    <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-danger"><i class="fab fa-google"></i> <span th:text="#{auth.login.google}">Google</span></a>
-                    <a th:href="@{/oauth2/authorization/github}" class="btn btn-dark"><i class="fab fa-github"></i> <span th:text="#{auth.login.github}">GitHub</span></a>
-                    <a th:href="@{/oauth2/authorization/facebook}" class="btn btn-facebook"><i class="fab fa-facebook"></i> <span th:text="#{auth.login.facebook}">Facebook</span></a>
+                    <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-danger"><i
+                            class="fab fa-google"></i> <span th:text="#{auth.login.google}">Google</span></a>
+                    <a th:href="@{/oauth2/authorization/github}" class="btn btn-dark"><i class="fab fa-github"></i>
+                        <span th:text="#{auth.login.github}">GitHub</span></a>
+                    <a th:href="@{/oauth2/authorization/facebook}" class="btn btn-facebook"><i
+                            class="fab fa-facebook"></i> <span th:text="#{auth.login.facebook}">Facebook</span></a>
                 </div>
             </div>
         </div>

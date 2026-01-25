@@ -1,17 +1,18 @@
 package com.epam.finaltask.model;
 
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
-import jakarta.persistence.*;
-import jakarta.persistence.Table;
-import lombok.*;
-import org.hibernate.annotations.*;
-import org.hibernate.type.SqlTypes;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Getter
@@ -46,7 +47,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "user_role", columnDefinition = "user_role_type")
     private Role role;
 
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Column(name = "vouchers")
     @ToString.Exclude
     private List<Voucher> vouchers;

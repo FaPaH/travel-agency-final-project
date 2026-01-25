@@ -2,8 +2,13 @@ package com.epam.finaltask.dto;
 
 import com.epam.finaltask.validation.annotation.UniqueEmail;
 import com.epam.finaltask.validation.annotation.UniqueUsername;
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor

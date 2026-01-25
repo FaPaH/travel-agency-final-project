@@ -77,10 +77,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userMapper.toUser(
                 userService.getUserById(
                         UUID.fromString(
-                            jwtUtil.extractClaim(
-                                    refreshRequest.getRefreshToken(),
-                                    claims -> claims.get("id", String.class)
-                            )
+                                jwtUtil.extractClaim(
+                                        refreshRequest.getRefreshToken(),
+                                        claims -> claims.get("id", String.class)
+                                )
                         )
                 )
         );
