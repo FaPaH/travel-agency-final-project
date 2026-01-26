@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: travel_agency_app
+    ports:
+      - "8443:8443"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/travel_agency
+      SSL_Password: ${SSL_Password}
+      Database_Username: ${Database_Username}
+      Database_Password: ${Database_Password}
+      Google_ClientID: ${Google_ClientID}
+      Google_Client_Secret: ${Google_Client_Secret}
+      Github_ClientId: ${Github_ClientId}
+      Github_Client_Secret: ${Github_Client_Secret}
+      Facebook_ClientId: ${Facebook_ClientId}
+      Facebook_Client_Secret: ${Facebook_Client_Secret}
+      Email_Username: ${Email_Username}
+      Email_Password: ${Email_Password}
+    networks:
+      - travel-network
+
+networks:
+  travel-network:
+    external: true
