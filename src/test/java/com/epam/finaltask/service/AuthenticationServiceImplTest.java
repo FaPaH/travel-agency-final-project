@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,6 +54,7 @@ class AuthenticationServiceImplTest {
     @DisplayName("Login: Success")
     void login() {
         User user = User.builder().id(UUID.randomUUID()).build();
+
         when(userService.getUserByUsername("u")).thenReturn(new UserDTO());
         when(userMapper.toUser(any())).thenReturn(user);
         when(jwtUtil.generateAccessToken(user)).thenReturn("a");
@@ -67,6 +69,7 @@ class AuthenticationServiceImplTest {
     @DisplayName("Register: Success")
     void register() {
         User user = User.builder().id(UUID.randomUUID()).build();
+
         when(passwordEncoder.encode("p")).thenReturn("enc");
         when(userMapper.toUserDTO(any())).thenReturn(new UserDTO());
         when(userService.saveUser(any(), eq("enc"))).thenReturn(new UserDTO());
@@ -109,9 +112,12 @@ class AuthenticationServiceImplTest {
     @DisplayName("Logout: With ID")
     void logout() {
         Claims claims = mock(Claims.class);
+
         when(claims.get("id", String.class)).thenReturn("id");
         when(jwtUtil.extractAllClaims("t")).thenReturn(claims);
+
         authService.logout(new LogoutRequest("t"));
+
         verify(jwtTokenStorageService).revoke("id");
     }
 
@@ -190,5 +196,74 @@ class AuthenticationServiceImplTest {
                         user.getAuthProvider() == AuthProvider.LOCAL &&
                         user.isActive()
         ));
+    }
+
+    @Test
+    @DisplayName("Refresh: Should execute claims resolver lambda (Lambda coverage)")
+    void refresh_ExecutesClaimsLambda() {
+        // Arrange
+        String token = "valid-token";
+        UUID uid = UUID.randomUUID();
+        User user = User.builder().id(uid).build();
+
+        when(jwtUtil.extractUsername(token)).thenReturn("user");
+        when(jwtTokenStorageService.get("user")).thenReturn(token);
+        when(jwtUtil.isTokenExpired(token)).thenReturn(false);
+
+        when(jwtUtil.extractClaim(eq(token), any())).thenAnswer(invocation -> {
+            Function<Claims, String> resolver = invocation.getArgument(1);
+            Claims mockClaims = mock(Claims.class);
+            when(mockClaims.get("id", String.class)).thenReturn(uid.toString());
+            return resolver.apply(mockClaims);
+        });
+
+        when(userService.getUserById(uid)).thenReturn(new UserDTO());
+        when(userMapper.toUser(any())).thenReturn(user);
+        when(jwtUtil.generateAccessToken(user)).thenReturn("newA");
+
+        // Act
+        AuthResponse response = authService.refresh(new RefreshTokenRequest(token));
+
+        // Assert
+        assertThat(response.getAccessToken()).isEqualTo("newA");
+    }
+
+    @Test
+    @DisplayName("Refresh: Should throw exception if User ID in token is not found")
+    void refresh_UserNotFound_ShouldThrowException() {
+        // Arrange
+        String token = "valid-token";
+        UUID uid = UUID.randomUUID();
+
+        when(jwtUtil.extractUsername(token)).thenReturn("user");
+        when(jwtTokenStorageService.get("user")).thenReturn(token);
+        when(jwtUtil.isTokenExpired(token)).thenReturn(false);
+        when(jwtUtil.extractClaim(eq(token), any())).thenReturn(uid.toString());
+
+        when(userService.getUserById(uid)).thenThrow(new RuntimeException("User not found"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> authService.refresh(new RefreshTokenRequest(token)))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("User not found");
+    }
+
+    @Test
+    @DisplayName("Refresh: Should throw IllegalArgumentException if ID in token is not a UUID")
+    void refresh_InvalidUuidInToken_ShouldThrow() {
+        // Arrange
+        String token = "valid-token";
+        String invalidUuid = "not-a-uuid-string";
+
+        when(jwtUtil.extractUsername(token)).thenReturn("user");
+        when(jwtTokenStorageService.get("user")).thenReturn(token);
+        when(jwtUtil.isTokenExpired(token)).thenReturn(false);
+        when(jwtUtil.extractClaim(eq(token), any())).thenReturn(invalidUuid);
+
+        // Act & Assert
+        assertThatThrownBy(() -> authService.refresh(new RefreshTokenRequest(token)))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(userService, never()).getUserById(any());
     }
 }

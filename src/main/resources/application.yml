@@ -1,0 +1,88 @@
+server:
+  port: 8443
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: "${SSL_Password}"
+    key-store-type: PKCS12
+    key-alias: finaltask
+    enabled: true
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+
+spring:
+  config:
+    import: "optional:file:.env[.properties]"
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/travel_agency
+    username: "${Database_Username}"
+    password: "${Database_Password}"
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "${Google_ClientID}"
+            client-secret: "${Google_Client_Secret}"
+            scope: email, profile
+          github:
+            client-id: "${Github_ClientId}"
+            client-secret: "${Github_Client_Secret}"
+            scope: user:email
+          facebook:
+            client-id: "${Facebook_ClientId}"
+            client-secret: "${Facebook_Client_Secret}"
+            scope: public_profile, email
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: "${Email_Username}"
+    password: "${Email_Password}"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  messages:
+    encoding: UTF-8
+    fallback-to-system-locale: false
+
+  thymeleaf:
+    encoding: UTF-8
+    mode: HTML
+
+application:
+  security:
+    jwt:
+      secret-key: 404E635263336A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000
+      refresh-token:
+        expiration: 172800000
+
+logging:
+  level:
+    org.springframework.web: INFO
+    org.springframework.security: INFO

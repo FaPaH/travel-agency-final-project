@@ -546,4 +546,123 @@ class VoucherServiceImplTest {
         // Assert
         verify(voucherPageStorage, never()).get(anyString());
     }
+
+    @Test
+    @DisplayName("isFilterEmpty: Should return false when Tours is set")
+    void isFilterEmpty_ToursSet_ReturnsFalse() {
+        VoucherFilerRequest filter = new VoucherFilerRequest();
+        filter.setTours(new ArrayList<>()); // Поле не null
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findWithFilers(filter, p);
+
+        // Кэш НЕ должен вызываться, так как фильтр не пустой
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: Should return false when MaxPrice is set")
+    void isFilterEmpty_MaxPriceSet_ReturnsFalse() {
+        VoucherFilerRequest filter = new VoucherFilerRequest();
+        filter.setMaxPrice(BigDecimal.TEN);
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findWithFilers(filter, p);
+
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: Should return false when Hotels is set")
+    void isFilterEmpty_HotelsSet_ReturnsFalse() {
+        VoucherFilerRequest filter = new VoucherFilerRequest();
+        filter.setHotels(new ArrayList<>());
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findWithFilers(filter, p);
+
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: Should return false when Transfers is set")
+    void isFilterEmpty_TransfersSet_ReturnsFalse() {
+        VoucherFilerRequest filter = new VoucherFilerRequest();
+        filter.setTransfers(new ArrayList<>());
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findWithFilers(filter, p);
+
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: AdminFilter should return false when VoucherId is set")
+    void isFilterEmpty_AdminFilter_VoucherIdSet_ReturnsFalse() {
+        AdminVoucherFilterRequest filter = new AdminVoucherFilterRequest();
+        filter.setVoucherId(String.valueOf(UUID.randomUUID()));
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findWithFilers(filter, p);
+
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: AdminFilter should return false when IsHot is set")
+    void isFilterEmpty_AdminFilter_IsHotSet_ReturnsFalse() {
+        AdminVoucherFilterRequest filter = new AdminVoucherFilterRequest();
+        filter.setIsHot(true);
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findWithFilers(filter, p);
+
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: PersonalFilter with null Statuses BUT set Base field should return false")
+    void isFilterEmpty_PersonalFilter_NullStatuses_But_MaxPriceSet_ReturnsFalse() {
+        PersonalVoucherFilterRequest filter = new PersonalVoucherFilterRequest();
+        filter.setUserId(UUID.randomUUID());
+        filter.setStatuses(null);
+        filter.setMaxPrice(BigDecimal.valueOf(500));
+
+        Pageable p = PageRequest.of(0, 10);
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        voucherService.findAllByUserId(filter, p);
+
+        verify(voucherPageStorage, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("isFilterEmpty: AdminFilter should return false when Statuses is set")
+    void isFilterEmpty_AdminFilter_StatusesSet_ReturnsFalse() {
+        // Arrange
+        AdminVoucherFilterRequest filter = new AdminVoucherFilterRequest();
+        filter.setStatuses(new ArrayList<>());
+
+        Pageable p = PageRequest.of(0, 10);
+
+        when(voucherRepository.findAll(any(Specification.class), eq(p))).thenReturn(Page.empty());
+
+        // Act
+        voucherService.findWithFilers(filter, p);
+
+        // Assert
+        verify(voucherPageStorage, never()).get(anyString());
+    }
 }
