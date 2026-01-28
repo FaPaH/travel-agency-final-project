@@ -52,6 +52,7 @@ public class SecurityConfig {
     private final HtmxAuthenticationEntryPoint htmxAuthenticationEntryPoint;
     private final CustomOAuth2FailureHandler customOAuth2FailureHandler;
     private final HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -69,7 +70,7 @@ public class SecurityConfig {
                         .anyRequest().requiresSecure()
                 )
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/**", "/auth/**", "error/error").permitAll()
+                        .requestMatchers("/api/auth/**", "/auth/**", "/error/error").permitAll()
                         .requestMatchers("/favicon.ico", "/", "/index", "/css/**", "/js/**", "/vouchers").permitAll()
                         .requestMatchers("/api/auth/reset-password", "/auth/reset-password", "/user/**", "/api/user/**").authenticated()
                         .requestMatchers("/manager/**", "/api/manager/**").hasAnyRole("ADMIN", "MANAGER")
@@ -101,7 +102,7 @@ public class SecurityConfig {
                         )
                         .failureHandler(customOAuth2FailureHandler)
                         .loginPage("/auth/sign-in")
-                        .successHandler(oAuth2AuthenticationSuccessHandler())
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
                 ).exceptionHandling(exception -> exception
                         .authenticationEntryPoint(htmxAuthenticationEntryPoint)
                 );
@@ -141,15 +142,15 @@ public class SecurityConfig {
         };
     }
 
-    @Bean
-    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
-        return new OAuth2AuthenticationSuccessHandler(
-                jwtUtil,
-                refreshTokenStorageService,
-                jwtProperties,
-                cookieAuthorizationRequestRepository
-        );
-    }
+//    @Bean
+//    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler() {
+//        return new OAuth2AuthenticationSuccessHandler(
+//                jwtUtil,
+//                refreshTokenStorageService,
+//                jwtProperties,
+//                cookieAuthorizationRequestRepository
+//        );
+//    }
 
     @Bean
     public AuthenticationProvider authenticationProvider() {

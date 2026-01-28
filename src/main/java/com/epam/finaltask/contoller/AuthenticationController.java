@@ -88,8 +88,8 @@ public class AuthenticationController {
 
             attemptService.clearBlocked(getClientIP(request));
 
-            addCookie(response, "jwt_access", "/", authResponse.getAccessToken(), (int) jwtProperties.getExpiration());
-            addCookie(response, "jwt_refresh", "/auth/refresh", authResponse.getAccessToken(), (int) jwtProperties.getExpiration());
+            addCookie(response, "jwt_access", "/", authResponse.getAccessToken(), (int) (jwtProperties.getExpiration() / 1000));
+            addCookie(response, "jwt_refresh", "/auth/refresh", authResponse.getAccessToken(), (int) (jwtProperties.getExpiration() / 1000));
 
             response.setHeader("HX-Redirect", "/index");
             return null;
