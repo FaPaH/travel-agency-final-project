@@ -61,7 +61,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     private User updateExistingUser(User existingUser, OAuth2UserInfo userInfo) {
-        existingUser.setUsername(userInfo.getName());
+        existingUser.setUsername(userInfo.getUsername());
 
         if (userInfo.getFirstName() != null) {
             existingUser.setFirstName(userInfo.getFirstName());
@@ -74,7 +74,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     }
 
     private User registerNewUser(OAuth2UserRequest userRequest, OAuth2UserInfo userInfo) {
-
         String usernameCandidate = userInfo.getUsername();
 
         if (usernameCandidate == null) {
