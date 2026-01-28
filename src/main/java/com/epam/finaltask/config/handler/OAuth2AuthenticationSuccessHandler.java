@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -23,6 +24,7 @@ import static com.epam.finaltask.util.CookieUtils.addCookie;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
@@ -37,25 +39,40 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
+        try {
+            log.info("OAuth2 Success Handler STARTED");
 
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        User user = userPrincipal.getUser();
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            User user = userPrincipal.getUser();
 
-        String accessToken = jwtUtil.generateAccessToken(user);
-        String refreshToken = jwtUtil.generateRefreshToken(user);
+            log.info("User found: {}", user.getEmail());
 
-        refreshTokenStorageService.revoke(user.getId().toString());
-        refreshTokenStorageService.store(user.getId().toString(), refreshToken);
+            String accessToken = jwtUtil.generateAccessToken(user);
+            String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        String clientType = getClientType(request);
+            log.info("Revoking old tokens...");
+            refreshTokenStorageService.revoke(user.getId().toString());
 
-        if ("external".equals(clientType)) {
-            handleExternalClient(request, response, accessToken, refreshToken);
-        } else {
-            handleBrowserClient(request, response, authentication, accessToken, refreshToken);
+            log.info("Storing new token...");
+            refreshTokenStorageService.store(user.getId().toString(), refreshToken);
+
+            clearAuthenticationAttributes(request, response);
+
+            String clientType = getClientType(request);
+            log.info("Client type: {}", clientType);
+
+            if ("external".equals(clientType)) {
+                handleExternalClient(request, response, accessToken, refreshToken);
+            } else {
+                handleBrowserClient(request, response, authentication, accessToken, refreshToken);
+            }
+
+            log.info("OAuth2 Success Handler FINISHED");
+
+        } catch (Exception e) {
+            log.error("CRITICAL ERROR in OAuth2 Handler", e);
+            response.sendError(500, "OAuth Error: " + e.getMessage());
         }
-
-        clearAuthenticationAttributes(request, response);
     }
 
     private void handleBrowserClient(HttpServletRequest request,
@@ -64,10 +81,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                                      String accessToken,
                                      String refreshToken) throws IOException, ServletException {
 
-        addCookie(response, "jwt_access", accessToken, "/", (int) jwtProperties.getExpiration());
-        addCookie(response, "jwt_refresh", refreshToken, "/auth/refresh", (int) jwtProperties.getRefreshToken().getExpiration());
+        int accessAge = (int) (jwtProperties.getExpiration() / 1000);
+        int refreshAge = (int) (jwtProperties.getRefreshToken().getExpiration() / 1000);
 
-        super.onAuthenticationSuccess(request, response, authentication);
+        addCookie(response, "jwt_access", "/", accessToken, accessAge);
+        addCookie(response, "jwt_refresh", "/auth/refresh", refreshToken, refreshAge);
+
+        String targetUrl = determineTargetUrl(request, response);
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
     protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
