@@ -38,6 +38,7 @@ public class VoucherDTO {
     private String description;
 
     @ToString.Include
+    @NotNull(message = "{validation.required}")
     @Positive(message = "{validation.voucher.price.positive}")
     private BigDecimal price;
 

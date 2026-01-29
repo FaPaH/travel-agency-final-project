@@ -182,14 +182,14 @@
                     <div class="col-md-8 mb-3">
                         <label class="form-label fw-bold" th:text="#{voucher.name}">Voucher name</label>
                         <input type="text" th:field="*{title}" class="form-control"
-                               th:placeholder="#{voucher.name.placeholder}" required
+                               th:placeholder="#{voucher.name.placeholder}"
                                th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold" th:text="#{common.price}">Price (USD)</label>
                         <input type="number" th:field="*{price}" class="form-control" step="0.01"
-                               th:placeholder="#{voucher.price.placeholder}" required
+                               th:placeholder="#{voucher.price.placeholder}"
                                th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
                     </div>
@@ -241,14 +241,14 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold" th:text="#{voucher.arrive_date}">Arrive date</label>
-                        <input type="date" th:field="*{arrivalDate}" class="form-control" required
+                        <input type="date" th:field="*{arrivalDate}" class="form-control"
                                th:classappend="${#fields.hasErrors('arrivalDate')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('arrivalDate')}"
                              th:errors="*{arrivalDate}"></div>
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold" th:text="#{voucher.eviction_date}">Eviction date</label>
-                        <input type="date" th:field="*{evictionDate}" class="form-control" required
+                        <input type="date" th:field="*{evictionDate}" class="form-control"
                                th:classappend="${#fields.hasErrors('evictionDate')} ? 'is-invalid'">
                         <div class="invalid-feedback" th:if="${#fields.hasErrors('evictionDate')}"
                              th:errors="*{evictionDate}"></div>
@@ -271,7 +271,7 @@
 
                 <div class="d-flex justify-content-end gap-2">
                     <button type="button" class="btn btn-secondary"
-                            hx-get="/vouchers/admin"
+                            hx-get="/admin/vouchers"
                             hx-target="#content-area"
                             th:text="#{common.cancel}">
                         Cancel

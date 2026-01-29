@@ -54,7 +54,7 @@ public class AdminRestController {
 
 
     @PostMapping("/users/toggle-status")
-    public ResponseEntity<UserDTO> blockUser(@ModelAttribute @Valid UserDTO userDto) {
-        return ResponseEntity.ok().body(userService.changeAccountStatus(userDto));
+    public ResponseEntity<UserDTO> blockUser(@ModelAttribute @Valid BlockUserRequest blockRequest) {
+        return ResponseEntity.ok().body(userService.changeAccountStatus(blockRequest.getUsername()));
     }
 }

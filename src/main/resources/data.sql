@@ -13,7 +13,7 @@ VALUES
 -- bob123
 ('33333333-3333-3333-3333-333333333333', 'traveler_bob', 'Bob', 'Traveler', '$2a$12$5ITpyTr6k2GnQPGPueEhTeekbsctqYRwdeRo/eXB6IQKRz25SzumK', 'USER', '+1122334455', 'bob@traveler.com', 5000.00, TRUE, 'LOCAL'),
 
---  student123
+-- student123
 ('44444444-4444-4444-4444-444444444444', 'poor_student', 'Denis', 'Radchenko', '$2a$12$ZV6JcqThPUCXALlU.lNBe.lK/RTzjT5EaxrWrIRkSeFA5mMK0sDF.', 'USER', NULL, 'student@uni.edu', 10.00, FALSE, 'LOCAL');
 
 INSERT INTO vouchers (
@@ -35,7 +35,6 @@ SELECT
 
     (random() * 6900 + 100)::NUMERIC(10, 2),
 
-    -- Типы (ENUM)
     tour_types[floor(random() * array_length(tour_types, 1) + 1)]::tour_type,
     transfer_types[floor(random() * array_length(transfer_types, 1) + 1)]::transfer_type,
     hotel_types[floor(random() * array_length(hotel_types, 1) + 1)]::hotel_type,

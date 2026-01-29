@@ -29,15 +29,7 @@
 </div>
 
 <tr th:fragment="user-row(user)" th:id="'user-row-' + ${user.id}">
-    <input type="hidden" name="id" th:value="${user.id}">
     <input type="hidden" name="username" th:value="${user.username}">
-    <input type="hidden" name="active" th:value="${user.active}">
-    <input type="hidden" name="firstName" th:value="${user.firstName}">
-    <input type="hidden" name="lastName" th:value="${user.lastName}">
-    <input type="hidden" name="phoneNumber" th:value="${user.phoneNumber}">
-    <input type="hidden" name="email" th:value="${user.email}">
-    <input type="hidden" name="balance" th:value="${user.balance}">
-    <input type="hidden" name="authProvider" th:value="${user.authProvider}">
 
     <td class="small" th:text="${user.id}"></td>
     <td class="font-weight-bold" th:text="${user.username}"></td>

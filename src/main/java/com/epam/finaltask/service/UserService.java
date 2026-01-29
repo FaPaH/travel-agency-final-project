@@ -17,7 +17,7 @@ public interface UserService {
 
     UserDTO getUserByUsername(String username);
 
-    UserDTO changeAccountStatus(UserDTO userDTO);
+    UserDTO changeAccountStatus(String username);
 
     UserDTO getUserById(UUID id);
 
