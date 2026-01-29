@@ -139,7 +139,7 @@ class CustomOAuth2UserServiceTest {
         // Arrange
         String email = "existing@gmail.com";
         String oldName = "Old Name";
-        String newName = "Updated Name";
+        String newName = "existing@gmail.com";
 
         OAuth2UserRequest request = createRequest("google");
 
