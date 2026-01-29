@@ -1,7 +1,6 @@
 package com.epam.finaltask.contoller;
 
 import com.epam.finaltask.dto.BlockUserRequest;
-import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
