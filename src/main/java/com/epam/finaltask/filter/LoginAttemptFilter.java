@@ -100,8 +100,9 @@ public class LoginAttemptFilter extends OncePerRequestFilter {
     }
 
     private boolean isLoginRequest(HttpServletRequest request) {
-        return ("/auth/perform_login".equals(request.getRequestURI()))
-                && "POST".equalsIgnoreCase(request.getMethod());
+        return (("/auth/perform_login".equals(request.getRequestURI())
+                || ("api/auth/perform_login".equals(request.getRequestURI())))
+                && "POST".equalsIgnoreCase(request.getMethod()));
     }
 
     private String getClientIP(HttpServletRequest request) {
