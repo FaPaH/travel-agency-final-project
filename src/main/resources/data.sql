@@ -30,22 +30,25 @@ INSERT INTO vouchers (
     is_hot
 )
 SELECT
-    tour_types[floor(random() * array_length(tour_types, 1) + 1)] || ' Trip #' || i AS title,
+    tour_types[floor(random() * array_length(tour_types, 1) + 1)] || ' Trip #' || i,
+    'Enjoy our exclusive ' || lower(tour_types[floor(random() * array_length(tour_types, 1) + 1)]) || ' package.',
 
-    'Enjoy our exclusive ' || lower(tour_types[floor(random() * array_length(tour_types, 1) + 1)]) ||
-    ' package. Transfer by ' || lower(transfer_types[floor(random() * array_length(transfer_types, 1) + 1)]) || ' included.',
+    (random() * 6900 + 100)::NUMERIC(10, 2),
 
-    (random() * 6900 + 100)::NUMERIC(10, 2) AS price,
-
+    -- Типы (ENUM)
     tour_types[floor(random() * array_length(tour_types, 1) + 1)]::tour_type,
     transfer_types[floor(random() * array_length(transfer_types, 1) + 1)]::transfer_type,
     hotel_types[floor(random() * array_length(hotel_types, 1) + 1)]::hotel_type,
-    status_types[floor(random() * array_length(status_types, 1) + 1)]::status_type,
+
+    CASE
+        WHEN selected_user.val IS NULL THEN 'CREATED'::status_type
+        ELSE (ARRAY['REGISTERED', 'PAID', 'CANCELED'])[floor(random() * 3 + 1)]::status_type
+    END,
 
     gen.arrival AS arrival_date,
     gen.arrival + (floor(random() * 14) + 1 || ' days')::INTERVAL AS eviction_date,
 
-    user_ids[floor(random() * array_length(user_ids, 1) + 1)] AS user_id,
+    selected_user.val AS user_id,
     (random() < 0.25) AS is_hot
 
 FROM generate_series(1, 120) AS i
@@ -54,7 +57,6 @@ FROM generate_series(1, 120) AS i
         ARRAY['HEALTH', 'SPORTS', 'LEISURE', 'SAFARI', 'WINE', 'ECO', 'ADVENTURE', 'CULTURAL'] AS tour_types,
         ARRAY['BUS', 'TRAIN', 'PLANE', 'SHIP', 'PRIVATE_CAR', 'JEEPS', 'MINIBUS', 'ELECTRICAL_CARS'] AS transfer_types,
         ARRAY['ONE_STARS', 'TWO_STARS', 'THREE_STARS', 'FOUR_STARS', 'FIVE_STARS'] AS hotel_types,
-        ARRAY['CREATED', 'REGISTERED', 'PAID', 'CANCELED'] AS status_types,
         ARRAY[
             '11111111-1111-1111-1111-111111111111'::uuid,
             '22222222-2222-2222-2222-222222222222'::uuid,
@@ -63,6 +65,9 @@ FROM generate_series(1, 120) AS i
             NULL
             ] AS user_ids
 ) AS data_source
+    CROSS JOIN LATERAL (
+    SELECT user_ids[floor(random() * array_length(user_ids, 1) + 1) + (i * 0)] AS val
+    ) AS selected_user
          CROSS JOIN LATERAL (
     SELECT ('2026-01-01'::date + (random() * 350)::int + (i * 0)) AS arrival
     ) AS gen;
