@@ -254,18 +254,29 @@ class UserServiceImplTest {
     @Test
     @DisplayName("changeAccountStatus: changes status and call updateUser")
     void changeAccountStatus_ShouldToggleAndCallUpdate() {
-        boolean initialStatus = userDTO.isActive();
+        // Arrange
+        String username = userDTO.getUsername();
+        String userId = userDTO.getId();
+        boolean initialStatus = true;
 
-        when(userRepository.findUserByUsername(userDTO.getUsername())).thenReturn(Optional.of(user));
+        user.setActive(initialStatus);
+        userDTO.setActive(!initialStatus);
+
+        when(userRepository.findUserByUsername(username)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toUserDTO(user)).thenReturn(userDTO);
 
-        UserDTO result = userService.changeAccountStatus(userDTO);
+        // Act
+        UserDTO result = userService.changeAccountStatus(username);
 
+        // Assert
         assertNotEquals(initialStatus, result.isActive());
+        assertNotEquals(initialStatus, user.isActive());
 
         verify(userRepository).save(user);
-        verify(userTokenStorageService, atLeast(1)).revoke(anyString());
+
+        verify(userTokenStorageService).revoke(userId);
+        verify(userTokenStorageService).revoke(username);
     }
 
     @Test
