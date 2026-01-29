@@ -129,6 +129,9 @@ public class AuthenticationController {
 
         if (bindingResult.hasErrors()) {
             response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+            model.addAttribute("hasEmail", false);
+            model.addAttribute("resetRequest", resetRequest);
+
             return "fragments/reset-password :: reset-password-fragment";
         }
 
@@ -138,7 +141,7 @@ public class AuthenticationController {
         resetService.proceedReset(resetRequest.getEmail(), false);
 
         model.addAttribute("success", true);
-        model.addAttribute("message", "Инструкции по сбросу пароля отправлены на почту: " + resetRequest.getEmail());
+        model.addAttribute("message", resetRequest.getEmail());
 
         return "fragments/reset-password :: reset-password-fragment";
     }
@@ -148,7 +151,7 @@ public class AuthenticationController {
                                 Model model) {
 
         if (!resetService.validateToken(token)) {
-            model.addAttribute("error", "The reset link is invalid or has expired.");
+            model.addAttribute("tokenError", true);
             return "auth/reset-password";
         }
 

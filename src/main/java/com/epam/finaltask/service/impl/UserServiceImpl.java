@@ -12,6 +12,7 @@ import com.epam.finaltask.repository.UserRepository;
 import com.epam.finaltask.service.TokenStorageService;
 import com.epam.finaltask.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final TokenStorageService<UserDTO> userTokenStorageService;
+    private final ModelMapper modelMapper;
 
     @Override
     public UserDTO saveUser(UserDTO userDTO, String password) {
@@ -98,10 +100,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO changeAccountStatus(UserDTO userDTO) {
-        userDTO.setActive(!userDTO.isActive());
+    public UserDTO changeAccountStatus(String username) {
+        User user = userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", username));
 
-        UserDTO returnUser = updateUser(userDTO.getUsername(), userDTO);
+        user.setActive(!user.isActive());
+
+        UserDTO returnUser = userMapper.toUserDTO(userRepository.save(user));
 
         userTokenStorageService.revoke(returnUser.getId());
         userTokenStorageService.revoke(returnUser.getUsername());

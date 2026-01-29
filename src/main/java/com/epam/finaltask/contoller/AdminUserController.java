@@ -1,5 +1,6 @@
 package com.epam.finaltask.contoller;
 
+import com.epam.finaltask.dto.BlockUserRequest;
 import com.epam.finaltask.dto.UserDTO;
 import com.epam.finaltask.service.UserService;
 import jakarta.validation.Valid;
@@ -31,11 +32,11 @@ public class AdminUserController {
     }
 
     @PostMapping("/users/toggle-status")
-    public String blockUser(@ModelAttribute @Valid UserDTO userDto,
+    public String blockUser(@ModelAttribute @Valid BlockUserRequest blockRequest,
                             Model model,
                             Pageable pageable) {
 
-        userService.changeAccountStatus(userDto);
+        userService.changeAccountStatus(blockRequest.getUsername());
 
         model.addAttribute("users", userService.getAllUsers(pageable));
 

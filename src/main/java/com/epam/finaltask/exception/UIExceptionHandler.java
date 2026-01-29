@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.stereotype.Controller;
@@ -46,6 +47,7 @@ public class UIExceptionHandler {
 
     @ExceptionHandler({
             DisabledException.class,
+            LockedException.class,
             BadCredentialsException.class,
             InvalidTokenException.class,
             OAuth2AuthenticationException.class,
@@ -66,7 +68,7 @@ public class UIExceptionHandler {
         if (ex instanceof BadCredentialsException) {
             key = "error.auth.bad_credentials";
             status = HttpStatus.UNAUTHORIZED;
-        } else if (ex instanceof DisabledException) {
+        } else if (ex instanceof DisabledException || ex instanceof LockedException) {
             key = "error.auth.disabled";
             status = HttpStatus.LOCKED;
         } else if (ex instanceof AuthenticationException) {

@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS vouchers (
     title VARCHAR(255) NOT NULL,
     description TEXT,
 
-    price NUMERIC(10, 2),
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
 
     voucher_tour_type tour_type,
     voucher_transfer_type transfer_type,
